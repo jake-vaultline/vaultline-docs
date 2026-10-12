@@ -14,6 +14,8 @@ class PortalExportTests(unittest.TestCase):
             self.assertEqual(packet['organizationId'],'org_a')
             self.assertEqual(packet['systemId'],'sys_a')
             self.assertEqual(len(packet['guides']),3)
+            self.assertFalse(any('archive-only' in issue for issue in packet['reviewIssues']))
+            self.assertIn('portal-export',(Path(result['updated'])/'portal-import.md').read_text())
             search=next(g for g in packet['guides'] if g['id']=='search-collection')
             self.assertNotIn('STUDIO-',search['baseMarkdown'])
             self.assertIn('STUDIO-',search['markdown'])

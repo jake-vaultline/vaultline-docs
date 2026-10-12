@@ -51,7 +51,7 @@ def export(package, deployment_id, organization_id, system_id, output):
             'sourceRevision':metadata['source_revision'],'generatedAt':metadata['generated_at'],
             'deployment':{'id':manifest['id'],'product':manifest['product'],'version':manifest['version'],'platform':manifest['platform'],
                           'modules':manifest['modules'],'config':manifest.get('config',{}),'manifestSha256':deployment['manifest_sha256'],'synthetic':manifest.get('synthetic',False)},
-            'guides':guides,'reviewIssues':[json.dumps(item,sort_keys=True)[:500] for item in report.get('review_required',[])],
+            'guides':guides,'reviewIssues':[json.dumps(item,sort_keys=True)[:500] for item in report.get('review_required',[]) if item.get('deployment') in (None,deployment_id)],
             'releaseNotes':(root/'release-notes.md').read_text(),
             'license':{'spdx':'GPL-3.0-or-later','notice':(root/'NOTICE').read_text(),'copying':(root/'COPYING').read_text(),'sourceUrl':'https://github.com/jake-vaultline/vaultline-docs'}}
     encoded=json.dumps(packet,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()

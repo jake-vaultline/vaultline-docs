@@ -190,15 +190,15 @@ def generate(repo, revision, recipes_path, manifest_paths, output, since=None, p
         package_data = {**metadata, 'schema_version': 1, 'generator_source_sha256': snapshot,
                         'mode': 'filesystem-preview', 'publication': 'not-authorized',
                         'deployments': deployments, 'blocked_guides': blocked,
-                        'portal': {'adapter': 'filesystem', 'max_attachment_bytes': 26_214_400,
-                                   'state': 'administrator-upload-not-run',
-                                   'interface': 'POST /api/admin/documents/upload-intent; signed upload PUT; POST /api/admin/documents',
-                                   'blocker': 'No authorized authenticated Portal administrator upload session. Support is contact guidance; inline Markdown help-center work is separately tracked.'}}
+                        'portal': {'adapter': 'native-review-json',
+                                   'state': 'draft-export-not-run',
+                                   'interface': 'portal-export; administrator client Support documentation import',
+                                   'blocker': 'Hosted Portal migration/deployment and administrator review/publication must be separately authorized.'}}
         write_json(package / 'package.json', package_data)
-        (package / 'portal-import.md').write_text('# Portal import preview\n\nNo live writes occurred. Use the existing Portal administrator Documents form after approval.\nChoose the client organization and a Resource document, attach the listed PDF, then save.\nThe Portal obtains a signed upload intent, uploads bytes, and saves the document only after\nvalidating its organization, file size and content type. Never submit package.json as a Portal API payload.\nPDFs embed screenshots; uploading individual Markdown attachments does not resolve sibling image paths.\nHTML and ZIP are local previews/archives; the Portal does not accept them as attachments.\n\nReview package.json for each attachment path, size, SHA-256 and deployment. Live tenant ids\nand upload ids are intentionally absent; the authenticated Portal generates them.\n')
+        (package / 'portal-import.md').write_text('# Native Portal import preview\n\nNo live writes occurred. Run python -m vaultline_docs portal-export with this package path,\nselected deployment and exact Portal organization/system ids. Import the resulting JSON\nfrom Client support documentation in the existing administrator client dashboard.\nReview the guides, deployment configuration, screenshots and preserved overrides before\nexplicit publication. See docs/PORTAL_EXPORT.md for the command and release gates.\n\nThe Portal consumes this bound review JSON, not package.json or the transport ZIP.\nThe existing Documents form remains an optional route for individual PDF resource attachments;\nPDFs embed screenshots. Markdown attachments do not resolve sibling image paths.\nNo credentials, tenant sessions, announcements or live publication are included.\n')
         (package / 'documentation.diff').write_text(review_diff(package, previous))
         write_json(package / 'checksums.json', {str(p.relative_to(package)): digest(p.read_bytes()) for p in package.rglob('*') if p.is_file()})
         package.rename(final)
-    # An archive for local transport; Portal consumes individual PDFs, not this archive.
+    # Local transport archive; native Portal imports the separately exported review JSON.
     shutil.make_archive(str(final), 'zip', final)
     return final
