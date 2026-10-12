@@ -25,7 +25,12 @@ def guide_body(guide, manifest=None, captures=None):
             text += '> Synthetic test fixture. These screenshots demonstrate the pipeline, not an installed Media Nexus client.\n\n'
         if manifest.get('config'):
             text += '## Deployment configuration\n\n'
-            text += '\n'.join('- ' + key + ': ' + str(value) for key, value in sorted(manifest['config'].items())) + '\n\n'
+            labels = {'collections':'Collections','remoteTransfer':'Remote download','canEdit':'Transfer permission','workstation':'Workstation'}
+            def setting(key, value):
+                label = labels.get(key, re.sub(r'([a-z])([A-Z])', r'\1 \2', key).replace('_', ' ').capitalize())
+                display = ('Enabled' if value else 'Disabled') if isinstance(value, bool) else str(value)
+                return '- ' + label + ': ' + display
+            text += '\n'.join(setting(key, value) for key, value in sorted(manifest['config'].items())) + '\n\n'
     sections = ('prerequisites', 'steps', 'expected', 'recovery')
     labels = {'prerequisites': 'Prerequisites', 'steps': 'Steps', 'expected': 'Expected result', 'recovery': 'Recovery'}
     overrides = manifest.get('overrides', {}).get(guide['id'], {}) if manifest else {}

@@ -97,6 +97,7 @@ def generate(repo, revision, recipes_path, manifest_paths, output, since=None, p
             write_guide(package / 'base', guide, metadata)
         content = {g['id']: {k: g.get(k) for k in ('title', 'summary', 'prerequisites', 'steps', 'expected', 'recovery')} for g in guides}
         write_json(package / 'base/guide-content.json', content)
+        write_json(package / 'base/guide-catalog.json', {g['id']: {'modules':g.get('modules',[]),'requires':g.get('requires',{}),'evidence':g['evidence']} for g in guides})
         old_content = json.loads((previous / 'base/guide-content.json').read_text()) if previous and (previous / 'base/guide-content.json').exists() else {}
         guide_changes = [{'guide': name, 'before': old_content.get(name), 'after': content.get(name)}
                          for name in sorted(content.keys() | old_content.keys()) if old_content.get(name) != content.get(name)]

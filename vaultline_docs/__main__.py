@@ -95,10 +95,19 @@ def main():
     gen.add_argument('--previous')
     gen.add_argument('--test-url', action='append', default=[], help='DEPLOYMENT=http://127.0.0.1:PORT (identity-bound test adapter)')
     gen.add_argument('--source-only', action='store_true', help='Explicitly report missing screenshots and runtime verification')
+    portal = commands.add_parser('portal-export', help='Export an immutable client/system-bound Portal import JSON; never publishes')
+    portal.add_argument('--package',required=True)
+    portal.add_argument('--deployment',required=True)
+    portal.add_argument('--organization-id',required=True)
+    portal.add_argument('--system-id',required=True)
+    portal.add_argument('--output',required=True)
     args = parser.parse_args()
     try:
         if args.command == 'demo':
             demo(args.output)
+        elif args.command == 'portal-export':
+            from .portal import export
+            print(export(args.package,args.deployment,args.organization_id,args.system_id,args.output))
         else:
             urls = dict(value.split('=', 1) for value in args.test_url)
             result = generate(args.repo, args.revision, args.recipes, args.manifest, args.output,

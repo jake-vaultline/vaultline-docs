@@ -26,7 +26,9 @@ Open a deployment's `index.html` to review it. Individual PDFs fit the existing
 Portal document attachment interface; HTML and ZIP are local previews only.
 
 See [pipeline usage](docs/VAULTLINE_DOCS.md), [source and portal inspection](docs/VAULTLINE_INSPECTION.md),
-and [sample output](examples/generated/README.md). Run tests with
+and [sample output](examples/generated/README.md). The [native Portal export](docs/PORTAL_EXPORT.md)
+adds a client/system-bound draft-import format for the Portal's built-in guide reader.
+Run tests with
 `.venv/bin/python -m unittest discover -s tests -v`.
 
 Everything is a draft. The new pipeline has no live publication or messaging
