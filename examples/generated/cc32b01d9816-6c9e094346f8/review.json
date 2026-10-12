@@ -1,0 +1,351 @@
+{
+  "affected_guides": [
+    "search-collection",
+    "download-media",
+    "interrupted-transfer"
+  ],
+  "blocked_guides": [],
+  "changed_paths": [],
+  "guide_changes": [
+    {
+      "after": {
+        "expected": [
+          "The downloaded bytes match the source synthetic media hash, recorded in capture-evidence.json."
+        ],
+        "prerequisites": [
+          "Sign in as the synthetic docs-reviewer.",
+          "Remote download must be enabled."
+        ],
+        "recovery": [
+          "If the transfer is Interrupted, restore the test connection and choose Resume before downloading."
+        ],
+        "steps": [
+          {
+            "actions": [
+              {
+                "op": "fill",
+                "selector": "#search",
+                "value": "sunrise"
+              },
+              {
+                "op": "click",
+                "selector": "#find"
+              },
+              {
+                "op": "check",
+                "selector": "#select"
+              },
+              {
+                "op": "click",
+                "selector": "#transfer"
+              },
+              {
+                "op": "click",
+                "selector": "#prepare"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#status",
+                "text": "Download ready: Synthetic Sunrise.svg"
+              }
+            ],
+            "expected": "Download ready: Synthetic Sunrise.svg",
+            "instruction": "Search for sunrise, select Synthetic Sunrise.svg, choose Transfer and Prepare download.",
+            "title": "Prepare download"
+          },
+          {
+            "actions": [
+              {
+                "op": "download",
+                "selector": "#download",
+                "sha256": "605d0e48fac398a4d8c031a979f39074b6891d71e53df58ceff345e7b5832595"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#status",
+                "text": "Download requested: Synthetic Sunrise.svg"
+              }
+            ],
+            "expected": "Download requested: Synthetic Sunrise.svg",
+            "instruction": "Choose Download synthetic media. The browser saves the synthetic SVG file.",
+            "title": "Download synthetic media"
+          }
+        ],
+        "summary": "Prepare and download the original synthetic media to the test device.",
+        "title": "Download selected media"
+      },
+      "before": null,
+      "guide": "download-media"
+    },
+    {
+      "after": {
+        "expected": [
+          "The transfer returns to Ready. This fixture does not prove native workstation copy or resumable browser-save behavior in Media Nexus."
+        ],
+        "prerequisites": [
+          "Sign in as the synthetic docs-reviewer.",
+          "Remote download must be enabled.",
+          "Use only the fixture interruption control; do not interrupt a live customer transfer."
+        ],
+        "recovery": [
+          "If the transfer remains Interrupted, inspect the reported error and request review. Do not claim success until Ready is visible."
+        ],
+        "steps": [
+          {
+            "actions": [
+              {
+                "op": "fill",
+                "selector": "#search",
+                "value": "sunrise"
+              },
+              {
+                "op": "click",
+                "selector": "#find"
+              },
+              {
+                "op": "check",
+                "selector": "#select"
+              },
+              {
+                "op": "click",
+                "selector": "#transfer"
+              },
+              {
+                "op": "click",
+                "selector": "#prepare"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#status",
+                "text": "Download ready: Synthetic Sunrise.svg"
+              }
+            ],
+            "expected": "Download ready: Synthetic Sunrise.svg",
+            "instruction": "Search sunrise, select the asset and prepare a download.",
+            "title": "Prepare a test transfer"
+          },
+          {
+            "actions": [
+              {
+                "op": "click",
+                "selector": "#interrupt"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#status",
+                "text": "Interrupted: synthetic connection interrupted"
+              }
+            ],
+            "expected": "Interrupted: synthetic connection interrupted",
+            "instruction": "Choose Simulate interruption and inspect the transfer status and error.",
+            "title": "Inspect interruption"
+          },
+          {
+            "actions": [
+              {
+                "op": "click",
+                "selector": "#resume"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#status",
+                "text": "Transfer ready after resume"
+              }
+            ],
+            "expected": "Transfer ready after resume",
+            "instruction": "Restore the synthetic test connection by choosing Resume. Inspect the row before downloading.",
+            "title": "Resume the fixture transfer"
+          }
+        ],
+        "summary": "Inspect an interrupted synthetic preparation and verify recovery before downloading.",
+        "title": "Diagnose an interrupted transfer"
+      },
+      "before": null,
+      "guide": "interrupted-transfer"
+    },
+    {
+      "after": {
+        "expected": [
+          "Demo selects contains the selected synthetic asset. The source media remains in the archive."
+        ],
+        "prerequisites": [
+          "Sign in with the built-in synthetic docs-reviewer account.",
+          "Archive and Collections must be enabled."
+        ],
+        "recovery": [
+          "If no result appears, check the exact search term sunrise and retry the search.",
+          "Collection creation requires a name and selected media. Select the result before creating."
+        ],
+        "steps": [
+          {
+            "actions": [
+              {
+                "op": "fill",
+                "selector": "#search",
+                "value": "sunrise"
+              },
+              {
+                "op": "click",
+                "selector": "#find"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#result",
+                "text": "1 result"
+              }
+            ],
+            "expected": "1 result",
+            "instruction": "Enter sunrise in Search archive and click Search.",
+            "title": "Search archive"
+          },
+          {
+            "actions": [
+              {
+                "op": "check",
+                "selector": "#select"
+              },
+              {
+                "op": "click",
+                "selector": "#add"
+              },
+              {
+                "op": "fill",
+                "selector": "#collection-name",
+                "value": "Demo selects"
+              },
+              {
+                "op": "click",
+                "selector": "#create"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#status",
+                "text": "Collection created: Demo selects"
+              }
+            ],
+            "expected": "Collection created: Demo selects",
+            "instruction": "Select Synthetic Sunrise.svg, choose Add to collection, enter Demo selects and choose Create and add.",
+            "title": "Create and add"
+          },
+          {
+            "actions": [
+              {
+                "op": "click",
+                "selector": "#collections"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#collection-list",
+                "text": "Demo selects | 1 asset"
+              }
+            ],
+            "expected": "Demo selects | 1 asset",
+            "instruction": "Open Collections and verify Demo selects contains one asset.",
+            "title": "Check the collection"
+          }
+        ],
+        "summary": "Find synthetic media and organize a selection without moving the original.",
+        "title": "Search the archive and create a collection"
+      },
+      "before": null,
+      "guide": "search-collection"
+    }
+  ],
+  "review_required": [
+    {
+      "deployment": "studio",
+      "guide": "search-collection",
+      "reason": "Deployment override is preserved human-authored content; base journey assertions do not verify it.",
+      "sections": [
+        "notes"
+      ]
+    },
+    {
+      "deployment": "archive-only",
+      "guide": "search-collection",
+      "reason": "Deployment override is preserved human-authored content; base journey assertions do not verify it.",
+      "sections": [
+        "notes"
+      ]
+    }
+  ],
+  "screenshot_changes": [
+    {
+      "deployment": "studio",
+      "file": "search-collection-step-2.png",
+      "previous_sha256": null,
+      "sha256": "6c913c983743c107b2ad8395a3addd4639f758b7027241020e23a8449077485a"
+    },
+    {
+      "deployment": "studio",
+      "file": "search-collection-step-3.png",
+      "previous_sha256": null,
+      "sha256": "61b37d4338c4e0156b39438f32ad3adf7b1be21ca28f9d6f110e8429408da6ed"
+    },
+    {
+      "deployment": "studio",
+      "file": "search-collection-step-1.png",
+      "previous_sha256": null,
+      "sha256": "561b48e42af22b83344a776d25cccda14a5871a134ffed5c27849fd9c67133fc"
+    },
+    {
+      "deployment": "studio",
+      "file": "interrupted-transfer-step-1.png",
+      "previous_sha256": null,
+      "sha256": "4b07cecdf06b508e95960af40bcf01920ab7e2ffc6ff220fcce13615053b564d"
+    },
+    {
+      "deployment": "studio",
+      "file": "interrupted-transfer-step-2.png",
+      "previous_sha256": null,
+      "sha256": "5053221d6b1ffb2129b5be3acb21fb5b9f5a5a1e14ff5e81461c67931f2705e2"
+    },
+    {
+      "deployment": "studio",
+      "file": "interrupted-transfer-step-3.png",
+      "previous_sha256": null,
+      "sha256": "dc61071ebe4adcbb60786df24ad98d9bde4fc773d377146b5e677bd1455130b1"
+    },
+    {
+      "deployment": "studio",
+      "file": "download-media-step-1.png",
+      "previous_sha256": null,
+      "sha256": "4b07cecdf06b508e95960af40bcf01920ab7e2ffc6ff220fcce13615053b564d"
+    },
+    {
+      "deployment": "studio",
+      "file": "download-media-step-2.png",
+      "previous_sha256": null,
+      "sha256": "d23723390a499fa4d484a48cc1a439c461f616cb367a03310e3cb40defd32306"
+    },
+    {
+      "deployment": "archive-only",
+      "file": "search-collection-step-2.png",
+      "previous_sha256": null,
+      "sha256": "271bbd6c18a8722db6d48d5e051b01aff2b7ad15e83f4d0452fa6ca0a733a7f0"
+    },
+    {
+      "deployment": "archive-only",
+      "file": "search-collection-step-3.png",
+      "previous_sha256": null,
+      "sha256": "d6e5c287b3a3cd806df5c8dbabcaa1b1342596987da9f5a8af5c92de3c14d100"
+    },
+    {
+      "deployment": "archive-only",
+      "file": "search-collection-step-1.png",
+      "previous_sha256": null,
+      "sha256": "023f64924e6be1eecc4456854758a02466f3a6918846efe0368a4fb9f39250f6"
+    }
+  ],
+  "since": null,
+  "source_revision": "cc32b01d98162073e6c0d0c33afdd620e5494f72",
+  "unclassified_changes": []
+}

@@ -1,0 +1,22 @@
+{
+  "id": "archive-only",
+  "label": "Synthetic Archive Only",
+  "product": "Synthetic Archive",
+  "version": "fixture-1.0.0",
+  "platform": "macOS / Chromium",
+  "modules": [
+    "core",
+    "archive"
+  ],
+  "synthetic": true,
+  "config": {
+    "collections": true,
+    "remoteTransfer": false,
+    "workstation": "Synthetic archive desk"
+  },
+  "overrides": {
+    "search-collection": {
+      "notes": "Use the collection prefix ARCHIVE- for this synthetic deployment."
+    }
+  }
+}

@@ -3,6 +3,13 @@ name: create-release
 description: Orchestrate complete product release workflow for FINISHED, PRODUCTION-READY features. Executes comprehensive release preparation including screenshot capture, documentation creation/updates, knowledge base sync, and customer announcement generation. ONLY invoke when user explicitly requests a "release", "launch", "announcement", or "release materials" for a completed feature ready for customer communication. Do NOT use for bug fixes, incomplete features, documentation-only updates, or internal changes. This is a high-stakes workflow that runs start-to-finish without stopping.
 ---
 
+> Vaultline Docs fork: default to `python -m vaultline_docs demo` or a reviewed
+> `generate` workflow. This legacy upstream integration is not the Vaultline
+> default. External uploads, published support updates and customer sends require
+> explicit authorization for the exact action. A documentation request alone
+> produces filesystem previews and draft release notes.
+
+
 # Create Release
 
 You are preparing a complete release for a new product feature. This includes creating customer announcements and updating product documentation.

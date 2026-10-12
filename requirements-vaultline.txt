@@ -1,0 +1,6 @@
+# Minimal offline pipeline; no AI API or knowledge-base credentials required.
+playwright==1.60.0
+markdown==3.9
+PyYAML==6.0.3
+reportlab==5.0.1
+beautifulsoup4==4.15.0

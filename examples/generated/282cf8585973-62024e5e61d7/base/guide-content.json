@@ -1,0 +1,101 @@
+{
+  "download-media": {
+    "expected": [
+      "The selected ready renditions are saved to the chosen device location. Verify the finished save before using the file."
+    ],
+    "prerequisites": [
+      "Archive remoteTransfer must be enabled and your signed-in account must have transfer permission.",
+      "Use Chrome or Edge on the destination device with a save-location picker.",
+      "Select media whose requested rendition is ready; missing renditions are not replaced with originals."
+    ],
+    "recovery": [
+      "If the browser cannot open a save-location picker, open Media Nexus in Chrome or Edge.",
+      "If preparation failed or the prepared artifact expired, inspect the transfer error and use Prepare again after resolving the reported cause.",
+      "If saving was interrupted within the current session and Resume save is offered, use it to continue the save. Do not treat preparation as a completed download."
+    ],
+    "steps": [
+      {
+        "expected": "The preview reports the requested and ready files. Missing renditions are identified.",
+        "instruction": "Select archive media and choose Transfer. In Rendition choose an available Original, Web proxy, or Edit proxy when enabled.",
+        "title": "Choose media and rendition"
+      },
+      {
+        "expected": "Transfers opens with download preparation progress. Multiple ready files are packaged together.",
+        "instruction": "Choose Download to this device, inspect the preview, then choose Prepare download.",
+        "title": "Prepare download"
+      },
+      {
+        "expected": "The interface reports saving progress; the saved file is present at the location you selected.",
+        "instruction": "When the prepared transfer is ready, choose Choose save location and pick a destination file on this device. Wait for the save operation to finish.",
+        "title": "Choose a save location"
+      }
+    ],
+    "summary": "Prepare a browser download from selected archive media. This guide covers the remote method; drive and advanced transfers require separate qualification.",
+    "title": "Download selected media"
+  },
+  "interrupted-transfer": {
+    "expected": [
+      "Recovery uses the control for the observed failure stage; a prepared artifact alone does not establish a completed device download."
+    ],
+    "prerequisites": [
+      "Archive remote download and transfer-edit permission must be enabled.",
+      "You must be able to open the relevant transfer record in Transfers."
+    ],
+    "recovery": [
+      "For missing derivatives, generate the missing proxy type only when that action is offered and you have processing permission. Reinspect the transfer before preparing again.",
+      "Do not remove a failed record before preserving the identifier and sanitized error for support."
+    ],
+    "steps": [
+      {
+        "expected": "Transfer details expose the reported error and file status. Preparation and downloaded byte counts are shown separately.",
+        "instruction": "Open Transfers, find the affected record using Search transfer history, and expand its summary. Record its mode, status, progress, artifact readiness and displayed error.",
+        "title": "Inspect the transfer"
+      },
+      {
+        "expected": "Preparation and save controls match the reported condition. A source-version error is not treated as a resumable completed source.",
+        "instruction": "For failed, cancelled, interrupted or expired remote preparation, resolve the displayed cause and use Prepare again. For a partial browser save, use Resume save when offered. If Source version required is displayed, start a new transfer with the producer's full size and SHA-256 as instructed.",
+        "title": "Choose the supported recovery"
+      },
+      {
+        "expected": "A ready artifact and completed local save are separate checks. An unresolved error remains a support case.",
+        "instruction": "Wait for the prepared artifact to be ready, choose a save location, and verify that the save finishes. If the error remains, retain the record and seek support with the transfer identifier and sanitized error.",
+        "title": "Verify recovery"
+      }
+    ],
+    "summary": "Distinguish preparation failure from an interrupted browser save before choosing recovery.",
+    "title": "Diagnose an interrupted transfer"
+  },
+  "search-collection": {
+    "expected": [
+      "The selected media appears in the named collection without moving originals."
+    ],
+    "prerequisites": [
+      "Archive and Collections must be enabled.",
+      "Sign in with permission to manage collections. Guest access does not grant collection editing.",
+      "The archive must contain indexed media."
+    ],
+    "recovery": [
+      "If the archive catalog cannot load, use Retry catalog when offered, then repeat the search.",
+      "If Create and add is disabled, check that Collection name is nonempty. Confirm collection-edit permission with the administrator."
+    ],
+    "steps": [
+      {
+        "expected": "Search results contain indexed media matching the submitted query; verify the asset names before selecting.",
+        "instruction": "Open Archive, enter a known indexed filename or term in Search media and submit the search.",
+        "title": "Search media"
+      },
+      {
+        "expected": "The new collection is created with the selected assets.",
+        "instruction": "Select the desired media using the asset selection control. Choose Add to collection, enter a Collection name under OR CREATE NEW, optionally enter purpose or handoff context, then choose Create and add.",
+        "title": "Select and create"
+      },
+      {
+        "expected": "Collection members are visible; grouping does not move the source files.",
+        "instruction": "Open Collections, open the newly named collection, and check that it contains the selected assets.",
+        "title": "Verify membership"
+      }
+    ],
+    "summary": "Find indexed media and group selected assets without moving source files.",
+    "title": "Search the archive and create a collection"
+  }
+}

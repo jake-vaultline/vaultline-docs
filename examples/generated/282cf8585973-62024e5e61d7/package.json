@@ -1,0 +1,97 @@
+{
+  "blocked_guides": [],
+  "deployments": [
+    {
+      "attachments": [
+        {
+          "category": "Resource",
+          "content_type": "application/pdf",
+          "date": "2026-10-12",
+          "file": "deployments/nexus-studio/search-collection.pdf",
+          "scope": "nexus-studio",
+          "sha256": "15da15e90a32993732631e42b0c0350a18991d74900529d0d9a95f02d7be47d5",
+          "size_bytes": 4422,
+          "state": "draft",
+          "title": "Search the archive and create a collection",
+          "type": "Guide"
+        },
+        {
+          "category": "Resource",
+          "content_type": "application/pdf",
+          "date": "2026-10-12",
+          "file": "deployments/nexus-studio/download-media.pdf",
+          "scope": "nexus-studio",
+          "sha256": "94d8f22be3093d3855441493c05596c64bc6dd44c52cc6791cb739e97170d3a7",
+          "size_bytes": 4633,
+          "state": "draft",
+          "title": "Download selected media",
+          "type": "Guide"
+        },
+        {
+          "category": "Resource",
+          "content_type": "application/pdf",
+          "date": "2026-10-12",
+          "file": "deployments/nexus-studio/interrupted-transfer.pdf",
+          "scope": "nexus-studio",
+          "sha256": "9a615895b202d96686ae3b5aefc2d962cbecf24394f984a9f5d82b01469a8948",
+          "size_bytes": 4765,
+          "state": "draft",
+          "title": "Diagnose an interrupted transfer",
+          "type": "Guide"
+        }
+      ],
+      "excluded": [],
+      "id": "nexus-studio",
+      "included": [
+        "search-collection",
+        "download-media",
+        "interrupted-transfer"
+      ],
+      "manifest_sha256": "ee544cc5b74016f021048ae0bff0d92df485fee7b7414f07263eff614f9ae871",
+      "version": "1.0.157"
+    },
+    {
+      "attachments": [
+        {
+          "category": "Resource",
+          "content_type": "application/pdf",
+          "date": "2026-10-12",
+          "file": "deployments/nexus-archive-only/search-collection.pdf",
+          "scope": "nexus-archive-only",
+          "sha256": "ae09f7cfe3b08fe5d0292dd74c5c52f809353d13cc117d1298e530b190ff2c10",
+          "size_bytes": 4427,
+          "state": "draft",
+          "title": "Search the archive and create a collection",
+          "type": "Guide"
+        }
+      ],
+      "excluded": [
+        "download-media",
+        "interrupted-transfer"
+      ],
+      "id": "nexus-archive-only",
+      "included": [
+        "search-collection"
+      ],
+      "manifest_sha256": "4fee2c19b5e7102aabe0e210ae7a88844b7ba91319bd07b2755c0a95a2ce1f06",
+      "version": "1.0.157"
+    }
+  ],
+  "generated_at": "2026-10-12T07:37:01.917085+00:00",
+  "generator_source_sha256": "bb12e390ae3fa91cb9a5d5da6ffe2701c269baba6e57e204aa03d7e4d1e8edfb",
+  "mode": "filesystem-preview",
+  "package_id": "282cf8585973-62024e5e61d7",
+  "portal": {
+    "adapter": "filesystem",
+    "blocker": "No authorized authenticated Portal administrator upload session. Support is contact guidance; inline Markdown help-center work is separately tracked.",
+    "interface": "POST /api/admin/documents/upload-intent; signed upload PUT; POST /api/admin/documents",
+    "max_attachment_bytes": 26214400,
+    "state": "administrator-upload-not-run"
+  },
+  "product": "Media Nexus",
+  "publication": "not-authorized",
+  "schema_version": 1,
+  "source_product_version": "1.0.157",
+  "source_revision": "282cf8585973c6dcaa2bd5c99d113300886656ec",
+  "status": "draft"
+}

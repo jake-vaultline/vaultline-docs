@@ -1,0 +1,62 @@
+{
+  "guides": {
+    "search-collection": [
+      {
+        "assertions": [
+          {
+            "selector": "#result",
+            "text": "1 result"
+          }
+        ],
+        "downloads": [],
+        "file": "search-collection-step-1.png",
+        "page_text_sha256": "8ff119ac73c6c52cf82af9b1ab2bd3fea9f995085d5e9de944b2f0df97766e9b",
+        "sha256": "e5841bfe228925e319f823b3c0045cbf1d55c4712998ed327a7f38310462902b",
+        "step": 1
+      },
+      {
+        "assertions": [
+          {
+            "selector": "#status",
+            "text": "Collection created: Demo selects"
+          }
+        ],
+        "downloads": [],
+        "file": "search-collection-step-2.png",
+        "page_text_sha256": "926ef2a452e1fb9a0dc13d20f51f57d2b10548d0fc47726f578bc5bbc7220376",
+        "sha256": "87ed4e58ce254a47b372a93770d026fb96d38e836c3d7e6195372cf0a1417958",
+        "step": 2
+      },
+      {
+        "assertions": [
+          {
+            "selector": "#collection-list",
+            "text": "Demo selects | 1 asset"
+          }
+        ],
+        "downloads": [],
+        "file": "search-collection-step-3.png",
+        "page_text_sha256": "1501835fa7a34252f3cc3aa47468ec4119215925a2db3638600ed1310d4802f7",
+        "sha256": "d6e5c287b3a3cd806df5c8dbabcaa1b1342596987da9f5a8af5c92de3c14d100",
+        "step": 3
+      }
+    ]
+  },
+  "identity": {
+    "config_sha256": "333537a3c571c91ffc514706f30f4b6268c3f6ec0a2e9c813956605356244068",
+    "contracts": {
+      "download-media.json": "ab5a5b80c51e8a15414d1277d93100f99cf80912444f7d177391d71ec281ab61",
+      "interrupted-transfer.json": "a0047bf02cac4e6f83694bfdec48da1ba5270c498c2bb25c4f2ba905bf1e0491",
+      "search-collection.json": "72ec54008d0c8125e3052efe05c3bbcca6f6ab3c0bc66b3f7f7aa6710e02ba29"
+    },
+    "modules": [
+      "core",
+      "archive"
+    ],
+    "platform": "macOS / Chromium",
+    "source_revision": "9481055f2b20bdad6d3dc5afc68af37e1aadf687",
+    "synthetic": true,
+    "test_account": "docs-reviewer",
+    "version": "fixture-1.0.0"
+  }
+}

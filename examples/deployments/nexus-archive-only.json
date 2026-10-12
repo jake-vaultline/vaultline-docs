@@ -1,0 +1,22 @@
+{
+  "id": "nexus-archive-only",
+  "label": "Source review - nexus-archive-only",
+  "product": "Media Nexus",
+  "version": "1.0.157",
+  "platform": "macOS / Chrome or Edge",
+  "modules": [
+    "core",
+    "archive"
+  ],
+  "synthetic": false,
+  "config": {
+    "collections": true,
+    "remoteTransfer": false,
+    "canEdit": true
+  },
+  "overrides": {
+    "search-collection": {
+      "notes": "Synthetic deployment instruction: use the prefix ARCHIVE- for handoff collections. Confirm this naming rule before publication."
+    }
+  }
+}

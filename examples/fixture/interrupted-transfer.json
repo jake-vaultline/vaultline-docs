@@ -1,0 +1,92 @@
+{
+  "id": "interrupted-transfer",
+  "title": "Diagnose an interrupted transfer",
+  "summary": "Inspect an interrupted synthetic preparation and verify recovery before downloading.",
+  "modules": [
+    "archive"
+  ],
+  "requires": {
+    "remoteTransfer": true
+  },
+  "prerequisites": [
+    "Sign in as the synthetic docs-reviewer.",
+    "Remote download must be enabled.",
+    "Use only the fixture interruption control; do not interrupt a live customer transfer."
+  ],
+  "steps": [
+    {
+      "title": "Prepare a test transfer",
+      "instruction": "Search sunrise, select the asset and prepare a download.",
+      "expected": "Download ready: Synthetic Sunrise.svg",
+      "actions": [
+        {
+          "op": "fill",
+          "selector": "#search",
+          "value": "sunrise"
+        },
+        {
+          "op": "click",
+          "selector": "#find"
+        },
+        {
+          "op": "check",
+          "selector": "#select"
+        },
+        {
+          "op": "click",
+          "selector": "#transfer"
+        },
+        {
+          "op": "click",
+          "selector": "#prepare"
+        }
+      ],
+      "assertions": [
+        {
+          "selector": "#status",
+          "text": "Download ready: Synthetic Sunrise.svg"
+        }
+      ]
+    },
+    {
+      "title": "Inspect interruption",
+      "instruction": "Choose Simulate interruption and inspect the transfer status and error.",
+      "expected": "Interrupted: synthetic connection interrupted",
+      "actions": [
+        {
+          "op": "click",
+          "selector": "#interrupt"
+        }
+      ],
+      "assertions": [
+        {
+          "selector": "#status",
+          "text": "Interrupted: synthetic connection interrupted"
+        }
+      ]
+    },
+    {
+      "title": "Resume the fixture transfer",
+      "instruction": "Restore the synthetic test connection by choosing Resume. Inspect the row before downloading.",
+      "expected": "Transfer ready after resume",
+      "actions": [
+        {
+          "op": "click",
+          "selector": "#resume"
+        }
+      ],
+      "assertions": [
+        {
+          "selector": "#status",
+          "text": "Transfer ready after resume"
+        }
+      ]
+    }
+  ],
+  "expected": [
+    "The transfer returns to Ready. This fixture does not prove native workstation copy or resumable browser-save behavior in Media Nexus."
+  ],
+  "recovery": [
+    "If the transfer remains Interrupted, inspect the reported error and request review. Do not claim success until Ready is visible."
+  ]
+}

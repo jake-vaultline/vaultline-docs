@@ -1,0 +1,10 @@
+Vaultline Docs is a modified version of max-doc-AI.
+Upstream: https://github.com/maxberko/max-doc-ai
+Upstream baseline: feb58b6143450f0967aa6e3b4efd776a3cdea94f
+Copyright (C) 2024 max-doc-ai contributors (original notice preserved in LICENSE).
+Copyright (C) 2026 Vaultline, for the Vaultline Docs additions.
+Modified 2026-10-12: deployment-aware local documentation generation, synthetic
+journey capture, review diffs, and filesystem/Portal-compatible draft exports.
+The upstream LICENSE grants GPL version 3 or, at your option, any later version.
+These additions use the same GPL-3.0-or-later terms. See LICENSE and COPYING.
+No warranty. Upstream trademarks and third-party services remain their owners'.

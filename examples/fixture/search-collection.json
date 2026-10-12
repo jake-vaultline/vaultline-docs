@@ -1,0 +1,93 @@
+{
+  "id": "search-collection",
+  "title": "Search the archive and create a collection",
+  "summary": "Find synthetic media and organize a selection without moving the original.",
+  "modules": [
+    "archive"
+  ],
+  "requires": {
+    "collections": true
+  },
+  "prerequisites": [
+    "Sign in with the built-in synthetic docs-reviewer account.",
+    "Archive and Collections must be enabled."
+  ],
+  "steps": [
+    {
+      "title": "Search archive",
+      "instruction": "Enter sunrise in Search archive and click Search.",
+      "expected": "1 result",
+      "actions": [
+        {
+          "op": "fill",
+          "selector": "#search",
+          "value": "sunrise"
+        },
+        {
+          "op": "click",
+          "selector": "#find"
+        }
+      ],
+      "assertions": [
+        {
+          "selector": "#result",
+          "text": "1 result"
+        }
+      ]
+    },
+    {
+      "title": "Create and add",
+      "instruction": "Select Synthetic Sunrise.svg, choose Add to collection, enter Demo selects and choose Create and add.",
+      "expected": "Collection created: Demo selects",
+      "actions": [
+        {
+          "op": "check",
+          "selector": "#select"
+        },
+        {
+          "op": "click",
+          "selector": "#add"
+        },
+        {
+          "op": "fill",
+          "selector": "#collection-name",
+          "value": "Demo selects"
+        },
+        {
+          "op": "click",
+          "selector": "#create"
+        }
+      ],
+      "assertions": [
+        {
+          "selector": "#status",
+          "text": "Collection created: Demo selects"
+        }
+      ]
+    },
+    {
+      "title": "Check the collection",
+      "instruction": "Open Collections and verify Demo selects contains one asset.",
+      "expected": "Demo selects | 1 asset",
+      "actions": [
+        {
+          "op": "click",
+          "selector": "#collections"
+        }
+      ],
+      "assertions": [
+        {
+          "selector": "#collection-list",
+          "text": "Demo selects | 1 asset"
+        }
+      ]
+    }
+  ],
+  "expected": [
+    "Demo selects contains the selected synthetic asset. The source media remains in the archive."
+  ],
+  "recovery": [
+    "If no result appears, check the exact search term sunrise and retry the search.",
+    "Collection creation requires a name and selected media. Select the result before creating."
+  ]
+}

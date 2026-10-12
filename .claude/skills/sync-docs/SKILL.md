@@ -3,6 +3,13 @@ name: sync-docs
 description: Sync documentation and screenshots to any knowledge base provider (Pylon, Zendesk, Confluence, etc.). Handles two modes: (1) Upload screenshots to KB CDN and return URLs, (2) Sync markdown documentation to KB with proper collection assignment. Provider-agnostic with automatic provider detection from config.
 ---
 
+> Vaultline Docs fork: default to `python -m vaultline_docs demo` or a reviewed
+> `generate` workflow. This legacy upstream integration is not the Vaultline
+> default. External uploads, published support updates and customer sends require
+> explicit authorization for the exact action. A documentation request alone
+> produces filesystem previews and draft release notes.
+
+
 # Sync Documentation to Knowledge Base
 
 Sync screenshots and documentation to any knowledge base provider.

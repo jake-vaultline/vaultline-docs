@@ -1,4 +1,46 @@
-# max-doc-AI
+# Vaultline Docs
+
+Deployment-aware documentation drafts for Media Nexus, derived from
+[max-doc-AI](https://github.com/maxberko/max-doc-ai). The upstream documentation
+and original notices are retained below; Vaultline's supported workflow is the
+local pipeline described here.
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/python -m playwright install chromium
+.venv/bin/python -m vaultline_docs demo
+```
+
+The last command generates complete, versioned preview packages for two synthetic
+deployments, changes the fixture's actual search control, regenerates documentation
+and screenshots, and verifies that deployment notes survive. It requires no AI API
+key, portal credential, paid service, or customer media. Python 3.9+ is supported.
+
+Packages contain shared `base/` guides, separate `deployments/` variants, Markdown,
+HTML previews, PDFs with embedded screenshots, source/version/date metadata, a
+documentation diff, screenshot assertions and hashes, draft release notes, an
+attachment import checklist, checksums, licensing, and corresponding generator
+source. `output/demo/demo-result.json` identifies the baseline and updated package.
+Open a deployment's `index.html` to review it. Individual PDFs fit the existing
+Portal document attachment interface; HTML and ZIP are local previews only.
+
+See [pipeline usage](docs/VAULTLINE_DOCS.md), [source and portal inspection](docs/VAULTLINE_INSPECTION.md),
+and [sample output](examples/generated/README.md). Run tests with
+`.venv/bin/python -m unittest discover -s tests -v`.
+
+Everything is a draft. The new pipeline has no live publication or messaging
+implementation. Upstream Pylon/Zendesk sync and create-release skills are legacy
+integrations and require separate explicit authorization before external writes.
+
+Licensed **GPL-3.0-or-later**, according to the actual upstream grant in LICENSE.
+The original notice, full GPL text in COPYING, derivative notice in NOTICE, and
+corresponding generator source are retained in exports. Do not distribute modified
+executables without satisfying the applicable Corresponding Source requirements.
+
+---
+
+# max-doc-AI (upstream documentation)
 
 Automate product documentation workflows with Claude Code.
 

@@ -1,0 +1,35 @@
+{
+  "product": "Vaultline Docs Synthetic Archive",
+  "modules": [
+    "core",
+    "archive",
+    "relay"
+  ],
+  "guides": [
+    {
+      "id": "search-collection",
+      "contract": "search-collection.json",
+      "dependencies": [
+        "app.html",
+        "media.svg"
+      ]
+    },
+    {
+      "id": "download-media",
+      "contract": "download-media.json",
+      "dependencies": [
+        "app.html",
+        "media.svg"
+      ]
+    },
+    {
+      "id": "interrupted-transfer",
+      "contract": "interrupted-transfer.json",
+      "dependencies": [
+        "app.html",
+        "media.svg"
+      ]
+    }
+  ],
+  "synthetic_fixture": true
+}

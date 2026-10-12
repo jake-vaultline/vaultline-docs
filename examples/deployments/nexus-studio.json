@@ -1,0 +1,23 @@
+{
+  "id": "nexus-studio",
+  "label": "Source review - nexus-studio",
+  "product": "Media Nexus",
+  "version": "1.0.157",
+  "platform": "macOS / Chrome or Edge",
+  "modules": [
+    "core",
+    "archive",
+    "relay"
+  ],
+  "synthetic": false,
+  "config": {
+    "collections": true,
+    "remoteTransfer": true,
+    "canEdit": true
+  },
+  "overrides": {
+    "search-collection": {
+      "notes": "Synthetic deployment instruction: use the prefix STUDIO- for handoff collections. Confirm this naming rule before publication."
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "blocked_guides": [],
+  "deployments": [
+    {
+      "attachments": [
+        {
+          "category": "Resource",
+          "content_type": "application/pdf",
+          "date": "2026-10-12",
+          "file": "deployments/studio/search-collection.pdf",
+          "scope": "studio",
+          "sha256": "ce2780827296e3a46af4d2c36f0b314808c1266050895aaf0a633527bd53849a",
+          "size_bytes": 194375,
+          "state": "draft",
+          "title": "Search the archive and create a collection",
+          "type": "Guide"
+        },
+        {
+          "category": "Resource",
+          "content_type": "application/pdf",
+          "date": "2026-10-12",
+          "file": "deployments/studio/download-media.pdf",
+          "scope": "studio",
+          "sha256": "16a58402a9649aee1879c011521efb7efef99b65710ae8a59952c46572e73c33",
+          "size_bytes": 119841,
+          "state": "draft",
+          "title": "Download selected media",
+          "type": "Guide"
+        },
+        {
+          "category": "Resource",
+          "content_type": "application/pdf",
+          "date": "2026-10-12",
+          "file": "deployments/studio/interrupted-transfer.pdf",
+          "scope": "studio",
+          "sha256": "ab58dacb4cdbce76f4d621615f25b3b1f57a0ca8eb7fd5cd8bb1eed6d98a8bc0",
+          "size_bytes": 174144,
+          "state": "draft",
+          "title": "Diagnose an interrupted transfer",
+          "type": "Guide"
+        }
+      ],
+      "excluded": [],
+      "id": "studio",
+      "included": [
+        "search-collection",
+        "download-media",
+        "interrupted-transfer"
+      ],
+      "manifest_sha256": "873e5468f5db7f0eb54c30c03c8c33cd4340fd8f15808e0d3286784e5809a954",
+      "version": "fixture-1.0.0"
+    },
+    {
+      "attachments": [
+        {
+          "category": "Resource",
+          "content_type": "application/pdf",
+          "date": "2026-10-12",
+          "file": "deployments/archive-only/search-collection.pdf",
+          "scope": "archive-only",
+          "sha256": "a0e6000bd50634295ca905f9e91ecd514616973ba3e45596ac75b36923c03e3e",
+          "size_bytes": 182340,
+          "state": "draft",
+          "title": "Search the archive and create a collection",
+          "type": "Guide"
+        }
+      ],
+      "excluded": [
+        "download-media",
+        "interrupted-transfer"
+      ],
+      "id": "archive-only",
+      "included": [
+        "search-collection"
+      ],
+      "manifest_sha256": "34ade4e49966b4deb3da03adb8d48417baf05e197faa08c800f23b5f925c7b75",
+      "version": "fixture-1.0.0"
+    }
+  ],
+  "generated_at": "2026-10-12T07:36:58.393704+00:00",
+  "generator_source_sha256": "bb12e390ae3fa91cb9a5d5da6ffe2701c269baba6e57e204aa03d7e4d1e8edfb",
+  "mode": "filesystem-preview",
+  "package_id": "9481055f2b20-e7c443d4c799",
+  "portal": {
+    "adapter": "filesystem",
+    "blocker": "No authorized authenticated Portal administrator upload session. Support is contact guidance; inline Markdown help-center work is separately tracked.",
+    "interface": "POST /api/admin/documents/upload-intent; signed upload PUT; POST /api/admin/documents",
+    "max_attachment_bytes": 26214400,
+    "state": "administrator-upload-not-run"
+  },
+  "product": "Vaultline Docs Synthetic Archive",
+  "publication": "not-authorized",
+  "schema_version": 1,
+  "source_revision": "9481055f2b20bdad6d3dc5afc68af37e1aadf687",
+  "status": "draft"
+}
