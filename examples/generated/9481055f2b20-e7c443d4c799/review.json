@@ -1,0 +1,275 @@
+{
+  "affected_guides": [
+    "search-collection"
+  ],
+  "blocked_guides": [],
+  "changed_paths": [
+    "search-collection.json"
+  ],
+  "guide_changes": [
+    {
+      "after": {
+        "expected": [
+          "Demo selects contains the selected synthetic asset. The source media remains in the archive."
+        ],
+        "prerequisites": [
+          "Sign in with the built-in synthetic docs-reviewer account.",
+          "Archive and Collections must be enabled."
+        ],
+        "recovery": [
+          "If no result appears, check the exact search term sunrise and retry the search.",
+          "Collection creation requires a name and selected media. Select the result before creating."
+        ],
+        "steps": [
+          {
+            "actions": [
+              {
+                "op": "fill",
+                "selector": "#search",
+                "value": "sunrise"
+              },
+              {
+                "op": "click",
+                "selector": "#find"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#result",
+                "text": "1 result"
+              }
+            ],
+            "expected": "1 result",
+            "instruction": "Enter sunrise in Search media and click Search.",
+            "title": "Search media"
+          },
+          {
+            "actions": [
+              {
+                "op": "check",
+                "selector": "#select"
+              },
+              {
+                "op": "click",
+                "selector": "#add"
+              },
+              {
+                "op": "fill",
+                "selector": "#collection-name",
+                "value": "Demo selects"
+              },
+              {
+                "op": "click",
+                "selector": "#create"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#status",
+                "text": "Collection created: Demo selects"
+              }
+            ],
+            "expected": "Collection created: Demo selects",
+            "instruction": "Select Synthetic Sunrise.svg, choose Add to collection, enter Demo selects and choose Create and add.",
+            "title": "Create and add"
+          },
+          {
+            "actions": [
+              {
+                "op": "click",
+                "selector": "#collections"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#collection-list",
+                "text": "Demo selects | 1 asset"
+              }
+            ],
+            "expected": "Demo selects | 1 asset",
+            "instruction": "Open Collections and verify Demo selects contains one asset.",
+            "title": "Check the collection"
+          }
+        ],
+        "summary": "Find synthetic media and organize a selection without moving the original.",
+        "title": "Search the archive and create a collection"
+      },
+      "before": {
+        "expected": [
+          "Demo selects contains the selected synthetic asset. The source media remains in the archive."
+        ],
+        "prerequisites": [
+          "Sign in with the built-in synthetic docs-reviewer account.",
+          "Archive and Collections must be enabled."
+        ],
+        "recovery": [
+          "If no result appears, check the exact search term sunrise and retry the search.",
+          "Collection creation requires a name and selected media. Select the result before creating."
+        ],
+        "steps": [
+          {
+            "actions": [
+              {
+                "op": "fill",
+                "selector": "#search",
+                "value": "sunrise"
+              },
+              {
+                "op": "click",
+                "selector": "#find"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#result",
+                "text": "1 result"
+              }
+            ],
+            "expected": "1 result",
+            "instruction": "Enter sunrise in Search archive and click Search.",
+            "title": "Search archive"
+          },
+          {
+            "actions": [
+              {
+                "op": "check",
+                "selector": "#select"
+              },
+              {
+                "op": "click",
+                "selector": "#add"
+              },
+              {
+                "op": "fill",
+                "selector": "#collection-name",
+                "value": "Demo selects"
+              },
+              {
+                "op": "click",
+                "selector": "#create"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#status",
+                "text": "Collection created: Demo selects"
+              }
+            ],
+            "expected": "Collection created: Demo selects",
+            "instruction": "Select Synthetic Sunrise.svg, choose Add to collection, enter Demo selects and choose Create and add.",
+            "title": "Create and add"
+          },
+          {
+            "actions": [
+              {
+                "op": "click",
+                "selector": "#collections"
+              }
+            ],
+            "assertions": [
+              {
+                "selector": "#collection-list",
+                "text": "Demo selects | 1 asset"
+              }
+            ],
+            "expected": "Demo selects | 1 asset",
+            "instruction": "Open Collections and verify Demo selects contains one asset.",
+            "title": "Check the collection"
+          }
+        ],
+        "summary": "Find synthetic media and organize a selection without moving the original.",
+        "title": "Search the archive and create a collection"
+      },
+      "guide": "search-collection"
+    }
+  ],
+  "review_required": [
+    {
+      "deployment": "studio",
+      "guide": "search-collection",
+      "reason": "Deployment override is preserved human-authored content; base journey assertions do not verify it.",
+      "sections": [
+        "notes"
+      ]
+    },
+    {
+      "deployment": "archive-only",
+      "guide": "search-collection",
+      "reason": "Deployment override is preserved human-authored content; base journey assertions do not verify it.",
+      "sections": [
+        "notes"
+      ]
+    }
+  ],
+  "screenshot_changes": [
+    {
+      "deployment": "studio",
+      "file": "search-collection-step-2.png",
+      "previous_sha256": "6c913c983743c107b2ad8395a3addd4639f758b7027241020e23a8449077485a",
+      "sha256": "702bc7c78c33c500c81785ae290ea7f7185ac97be2f447b0f825216f9670722d"
+    },
+    {
+      "deployment": "studio",
+      "file": "search-collection-step-3.png",
+      "previous_sha256": "61b37d4338c4e0156b39438f32ad3adf7b1be21ca28f9d6f110e8429408da6ed",
+      "sha256": "61b37d4338c4e0156b39438f32ad3adf7b1be21ca28f9d6f110e8429408da6ed"
+    },
+    {
+      "deployment": "studio",
+      "file": "search-collection-step-1.png",
+      "previous_sha256": "561b48e42af22b83344a776d25cccda14a5871a134ffed5c27849fd9c67133fc",
+      "sha256": "b66b9f670bbe33889f748e8e633a1893dbbe5634e24c31aa4ee7aab553a74f1e"
+    },
+    {
+      "deployment": "studio",
+      "file": "interrupted-transfer-step-1.png",
+      "previous_sha256": "4b07cecdf06b508e95960af40bcf01920ab7e2ffc6ff220fcce13615053b564d",
+      "sha256": "4b07cecdf06b508e95960af40bcf01920ab7e2ffc6ff220fcce13615053b564d"
+    },
+    {
+      "deployment": "studio",
+      "file": "interrupted-transfer-step-2.png",
+      "previous_sha256": "5053221d6b1ffb2129b5be3acb21fb5b9f5a5a1e14ff5e81461c67931f2705e2",
+      "sha256": "5053221d6b1ffb2129b5be3acb21fb5b9f5a5a1e14ff5e81461c67931f2705e2"
+    },
+    {
+      "deployment": "studio",
+      "file": "interrupted-transfer-step-3.png",
+      "previous_sha256": "dc61071ebe4adcbb60786df24ad98d9bde4fc773d377146b5e677bd1455130b1",
+      "sha256": "dc61071ebe4adcbb60786df24ad98d9bde4fc773d377146b5e677bd1455130b1"
+    },
+    {
+      "deployment": "studio",
+      "file": "download-media-step-1.png",
+      "previous_sha256": "4b07cecdf06b508e95960af40bcf01920ab7e2ffc6ff220fcce13615053b564d",
+      "sha256": "4b07cecdf06b508e95960af40bcf01920ab7e2ffc6ff220fcce13615053b564d"
+    },
+    {
+      "deployment": "studio",
+      "file": "download-media-step-2.png",
+      "previous_sha256": "d23723390a499fa4d484a48cc1a439c461f616cb367a03310e3cb40defd32306",
+      "sha256": "d23723390a499fa4d484a48cc1a439c461f616cb367a03310e3cb40defd32306"
+    },
+    {
+      "deployment": "archive-only",
+      "file": "search-collection-step-2.png",
+      "previous_sha256": "271bbd6c18a8722db6d48d5e051b01aff2b7ad15e83f4d0452fa6ca0a733a7f0",
+      "sha256": "87ed4e58ce254a47b372a93770d026fb96d38e836c3d7e6195372cf0a1417958"
+    },
+    {
+      "deployment": "archive-only",
+      "file": "search-collection-step-3.png",
+      "previous_sha256": "d6e5c287b3a3cd806df5c8dbabcaa1b1342596987da9f5a8af5c92de3c14d100",
+      "sha256": "d6e5c287b3a3cd806df5c8dbabcaa1b1342596987da9f5a8af5c92de3c14d100"
+    },
+    {
+      "deployment": "archive-only",
+      "file": "search-collection-step-1.png",
+      "previous_sha256": "023f64924e6be1eecc4456854758a02466f3a6918846efe0368a4fb9f39250f6",
+      "sha256": "e5841bfe228925e319f823b3c0045cbf1d55c4712998ed327a7f38310462902b"
+    }
+  ],
+  "since": "cc32b01d98162073e6c0d0c33afdd620e5494f72",
+  "source_revision": "9481055f2b20bdad6d3dc5afc68af37e1aadf687",
+  "unclassified_changes": []
+}

@@ -1,0 +1,16 @@
+{
+  "fixture_baseline": "cc32b01d9816-6c9e094346f8",
+  "fixture_updated": "9481055f2b20-e7c443d4c799",
+  "media_nexus": "282cf8585973-62024e5e61d7",
+  "html_guides_verified": 14,
+  "html_image_loading": "pass",
+  "html_horizontal_overflow": "none",
+  "pdf_pages_rendered": 23,
+  "tests": 8,
+  "step_captures_per_package": 11,
+  "generator_revision": "a7db9e0",
+  "core_revision": "282cf8585973c6dcaa2bd5c99d113300886656ec",
+  "portal_revision": "8192371ab58d72a9e88369caa9e9c7d8fbabce1f",
+  "portal_writes": "not run",
+  "real_media_nexus_capture": "not run"
+}

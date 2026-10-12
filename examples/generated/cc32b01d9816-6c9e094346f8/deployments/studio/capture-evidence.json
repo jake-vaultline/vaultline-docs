@@ -1,0 +1,137 @@
+{
+  "guides": {
+    "download-media": [
+      {
+        "assertions": [
+          {
+            "selector": "#status",
+            "text": "Download ready: Synthetic Sunrise.svg"
+          }
+        ],
+        "downloads": [],
+        "file": "download-media-step-1.png",
+        "page_text_sha256": "db0eaef3932acd6a48c835dd8d202b9a1110d16c78501f38140661e202de7c96",
+        "sha256": "4b07cecdf06b508e95960af40bcf01920ab7e2ffc6ff220fcce13615053b564d",
+        "step": 1
+      },
+      {
+        "assertions": [
+          {
+            "selector": "#status",
+            "text": "Download requested: Synthetic Sunrise.svg"
+          }
+        ],
+        "downloads": [
+          {
+            "sha256": "605d0e48fac398a4d8c031a979f39074b6891d71e53df58ceff345e7b5832595",
+            "size_bytes": 444
+          }
+        ],
+        "file": "download-media-step-2.png",
+        "page_text_sha256": "1a1cf26324f186ebbb64129a45b6325298471c581c60932332f4bb4ff15eb263",
+        "sha256": "d23723390a499fa4d484a48cc1a439c461f616cb367a03310e3cb40defd32306",
+        "step": 2
+      }
+    ],
+    "interrupted-transfer": [
+      {
+        "assertions": [
+          {
+            "selector": "#status",
+            "text": "Download ready: Synthetic Sunrise.svg"
+          }
+        ],
+        "downloads": [],
+        "file": "interrupted-transfer-step-1.png",
+        "page_text_sha256": "db0eaef3932acd6a48c835dd8d202b9a1110d16c78501f38140661e202de7c96",
+        "sha256": "4b07cecdf06b508e95960af40bcf01920ab7e2ffc6ff220fcce13615053b564d",
+        "step": 1
+      },
+      {
+        "assertions": [
+          {
+            "selector": "#status",
+            "text": "Interrupted: synthetic connection interrupted"
+          }
+        ],
+        "downloads": [],
+        "file": "interrupted-transfer-step-2.png",
+        "page_text_sha256": "1472f3872593bc6847626769142d5d7d33a18c0f7de889ec2b714eb23faa8313",
+        "sha256": "5053221d6b1ffb2129b5be3acb21fb5b9f5a5a1e14ff5e81461c67931f2705e2",
+        "step": 2
+      },
+      {
+        "assertions": [
+          {
+            "selector": "#status",
+            "text": "Transfer ready after resume"
+          }
+        ],
+        "downloads": [],
+        "file": "interrupted-transfer-step-3.png",
+        "page_text_sha256": "b49dbab5dd98eb566b46b94ec7ec51eec0f9087314adb4e46c89dcd12a9b8d3a",
+        "sha256": "dc61071ebe4adcbb60786df24ad98d9bde4fc773d377146b5e677bd1455130b1",
+        "step": 3
+      }
+    ],
+    "search-collection": [
+      {
+        "assertions": [
+          {
+            "selector": "#result",
+            "text": "1 result"
+          }
+        ],
+        "downloads": [],
+        "file": "search-collection-step-1.png",
+        "page_text_sha256": "95e4fe84a810ad9d1e967a1738cee46e82dccf33dbb2e44f3584c62d034c01ee",
+        "sha256": "561b48e42af22b83344a776d25cccda14a5871a134ffed5c27849fd9c67133fc",
+        "step": 1
+      },
+      {
+        "assertions": [
+          {
+            "selector": "#status",
+            "text": "Collection created: Demo selects"
+          }
+        ],
+        "downloads": [],
+        "file": "search-collection-step-2.png",
+        "page_text_sha256": "2aca033afb576b0b77e2235a60c917d04e06f601f06cd18102ae8dc2426d3108",
+        "sha256": "6c913c983743c107b2ad8395a3addd4639f758b7027241020e23a8449077485a",
+        "step": 2
+      },
+      {
+        "assertions": [
+          {
+            "selector": "#collection-list",
+            "text": "Demo selects | 1 asset"
+          }
+        ],
+        "downloads": [],
+        "file": "search-collection-step-3.png",
+        "page_text_sha256": "e95719fb15f482874775ebfe135f2e847567a035d4309bfddbdc311ba00af0b0",
+        "sha256": "61b37d4338c4e0156b39438f32ad3adf7b1be21ca28f9d6f110e8429408da6ed",
+        "step": 3
+      }
+    ]
+  },
+  "identity": {
+    "config_sha256": "043f50294f813b547f42372cbf2b30d74fcf1e5cc422b327a5afb6224147e076",
+    "contracts": {
+      "download-media.json": "ab5a5b80c51e8a15414d1277d93100f99cf80912444f7d177391d71ec281ab61",
+      "interrupted-transfer.json": "a0047bf02cac4e6f83694bfdec48da1ba5270c498c2bb25c4f2ba905bf1e0491",
+      "search-collection.json": "769995235be1df8a06386ede6c2606464ee16186a3eb58f3bbbef9081c65becf"
+    },
+    "modules": [
+      "core",
+      "archive",
+      "relay"
+    ],
+    "platform": "macOS / Chromium",
+    "source_revision": "cc32b01d98162073e6c0d0c33afdd620e5494f72",
+    "synthetic": true,
+    "test_account": "docs-reviewer",
+    "version": "fixture-1.0.0"
+  }
+}

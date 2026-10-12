@@ -1,0 +1,5 @@
+# Export artifacts are binary; patch files contain significant diff whitespace.
+*.pdf binary
+*.png binary
+*.zip binary
+*.diff -whitespace
