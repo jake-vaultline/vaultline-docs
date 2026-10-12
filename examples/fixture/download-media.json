@@ -1,0 +1,75 @@
+{
+  "id": "download-media",
+  "title": "Download selected media",
+  "summary": "Prepare and download the original synthetic media to the test device.",
+  "modules": [
+    "archive"
+  ],
+  "requires": {
+    "remoteTransfer": true
+  },
+  "prerequisites": [
+    "Sign in as the synthetic docs-reviewer.",
+    "Remote download must be enabled."
+  ],
+  "steps": [
+    {
+      "title": "Prepare download",
+      "instruction": "Search for sunrise, select Synthetic Sunrise.svg, choose Transfer and Prepare download.",
+      "expected": "Download ready: Synthetic Sunrise.svg",
+      "actions": [
+        {
+          "op": "fill",
+          "selector": "#search",
+          "value": "sunrise"
+        },
+        {
+          "op": "click",
+          "selector": "#find"
+        },
+        {
+          "op": "check",
+          "selector": "#select"
+        },
+        {
+          "op": "click",
+          "selector": "#transfer"
+        },
+        {
+          "op": "click",
+          "selector": "#prepare"
+        }
+      ],
+      "assertions": [
+        {
+          "selector": "#status",
+          "text": "Download ready: Synthetic Sunrise.svg"
+        }
+      ]
+    },
+    {
+      "title": "Download synthetic media",
+      "instruction": "Choose Download synthetic media. The browser saves the synthetic SVG file.",
+      "expected": "Download requested: Synthetic Sunrise.svg",
+      "actions": [
+        {
+          "op": "download",
+          "selector": "#download",
+          "sha256": "605d0e48fac398a4d8c031a979f39074b6891d71e53df58ceff345e7b5832595"
+        }
+      ],
+      "assertions": [
+        {
+          "selector": "#status",
+          "text": "Download requested: Synthetic Sunrise.svg"
+        }
+      ]
+    }
+  ],
+  "expected": [
+    "The downloaded bytes match the source synthetic media hash, recorded in capture-evidence.json."
+  ],
+  "recovery": [
+    "If the transfer is Interrupted, restore the test connection and choose Resume before downloading."
+  ]
+}

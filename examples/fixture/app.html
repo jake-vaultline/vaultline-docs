@@ -1,0 +1,47 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Vaultline Docs synthetic test deployment</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eff3f7;color:#18374b;font:16px/1.5 system-ui}
+header{background:#163d54;color:white;padding:22px 36px}header p{margin:5px 0;color:#d7e9f2}
+main{max-width:1050px;margin:32px auto;background:white;border-radius:12px;padding:32px;box-shadow:0 4px 20px #153d5410}
+button{border:0;border-radius:6px;padding:10px 18px;background:#176881;color:white;cursor:pointer;margin:6px}button:disabled{opacity:.4}
+input{font:inherit;padding:10px;border:1px solid #a7bbc8;border-radius:5px}label{display:block;margin:8px 0}
+.badge{display:inline-block;background:#dff2e8;color:#215b42;border-radius:20px;padding:4px 12px;font-size:13px}
+nav{border-bottom:1px solid #dce5ed;margin-bottom:26px}h1{font-size:27px;margin-top:0}h2{font-size:20px}
+#assets{display:flex;gap:20px;padding:18px 0}.card{width:320px;border:1px solid #dce5ed;border-radius:8px;padding:16px}
+img{width:100%;border-radius:6px}#status{margin:20px 0;background:#edf6fb;padding:16px;border-radius:6px;min-height:52px}
+.notice{font-size:13px;color:#5d7485}a{color:#176881;font-weight:600}footer{margin-top:28px;border-top:1px solid #dce5ed;padding-top:15px}
+</style>
+<header><strong>Vaultline Docs | Synthetic test application</strong><p>Pipeline demonstration - no customer media or commissioned installation</p></header>
+<main><div id="login"><h1>Documentation test session</h1><p>Use the built-in synthetic reviewer account.</p><button id="start">Start synthetic session</button></div>
+<div id="workspace" hidden><span class="badge" id="identity"></span><p class="notice">Test account: docs-reviewer | Synthetic media only</p>
+<nav><button id="archive">Archive</button><button id="collections">Collections</button><button id="transfers">Transfers</button><span id="relay" hidden>Relay workstation enabled</span></nav>
+<section id="archive-view"><h1 id="search-title"></h1><label for="search" id="search-label"></label><input id="search" placeholder="sunrise"><button id="find">Search</button><div id="result"></div><div id="assets"></div>
+<button id="add">Add to collection</button><button id="transfer">Transfer</button>
+<div id="collection-form" hidden><h2>Create a collection</h2><label for="collection-name">Collection name</label><input id="collection-name" value=""><button id="create">Create and add</button></div>
+</section><section id="collections-view" hidden><h1>Collections</h1><div id="collection-list"></div></section>
+<section id="transfers-view" hidden><h1>Transfers</h1><div id="transfer-list"></div></section>
+<div id="transfer-form" hidden><h2>Download selected media</h2><p>Original synthetic SVG | Download to this device</p><button id="prepare">Prepare download</button></div>
+<div id="status" role="status">Ready for a synthetic journey.</div>
+<footer class="notice">Expected results are verified before each screenshot. Fixture behavior is not Media Nexus product acceptance.</footer></div></main>
+<script>
+let cfg, selected=[];
+const $=id=>document.getElementById(id);
+const request=async(path,data)=>{const r=await fetch(path,data?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}:{});if(!r.ok)throw Error('Fixture request failed');return r.json()};
+const status=text=>$('status').textContent=text;
+const view=name=>['archive','collections','transfers'].forEach(id=>$(id+'-view').hidden=id!==name);
+async function transfers(){view('transfers');const items=await request('/api/transfer');const row=$('transfer-list');row.replaceChildren();items.forEach(item=>{const p=document.createElement('p');p.textContent='Synthetic Sunrise.svg | '+item.status+(item.error?' | '+item.error:'');row.append(p)});if(items.length){
+const ready=items[0].status==='Ready';if(ready){const a=document.createElement('a');a.id='download';a.href='/api/download';a.download='synthetic-sunrise.svg';a.textContent='Download synthetic media';a.onclick=()=>status('Download requested: Synthetic Sunrise.svg');row.append(a)}
+const b=document.createElement('button');b.id=ready?'interrupt':'resume';b.textContent=ready?'Simulate interruption':'Resume';b.onclick=async()=>{await request(ready?'/api/interrupt':'/api/resume',{});status(ready?'Interrupted: synthetic connection interrupted':'Transfer ready after resume');transfers()};row.append(b)}}
+request('/api/config').then(value=>{cfg=value;$('search-title').textContent=cfg.contracts['search-collection'].steps[0].title;$('search-label').textContent=cfg.contracts['search-collection'].steps[0].title;
+$('identity').textContent=cfg.manifest.label+' | '+cfg.manifest.version+' | '+cfg.manifest.platform;
+$('transfers').hidden=$('transfer').hidden=!cfg.manifest.config.remoteTransfer;$('relay').hidden=!cfg.manifest.modules.includes('relay');});
+$('start').onclick=async()=>{await request('/api/session',{});$('login').hidden=true;$('workspace').hidden=false;status('Signed in as synthetic docs-reviewer')};
+$('archive').onclick=()=>view('archive');
+$('find').onclick=async()=>{const data=await request('/api/search?q='+encodeURIComponent($('search').value));$('result').textContent=data.assets.length+' result';$('assets').replaceChildren();data.assets.forEach(asset=>{const card=document.createElement('div');card.className='card';const img=document.createElement('img');img.src='/media.svg';img.alt='Generated sunrise illustration';card.append(img);const label=document.createElement('label');const box=document.createElement('input');box.id='select';box.type='checkbox';box.onchange=()=>selected=box.checked?[asset.id]:[];label.append(box,asset.name);card.append(label);$('assets').append(card)});status('Search completed')};
+$('add').onclick=()=>{$('collection-form').hidden=false};
+$('create').onclick=async()=>{const result=await request('/api/collections',{name:$('collection-name').value,ids:selected});$('collection-form').hidden=true;status(result.message)};
+$('collections').onclick=async()=>{view('collections');const data=await request('/api/collections');$('collection-list').textContent=data.map(c=>c.name+' | '+c.assets.length+' asset').join('; ');status('Collections loaded')};
+$('transfer').onclick=()=>{$('transfer-form').hidden=false};
+$('prepare').onclick=async()=>{await request('/api/transfer',{ids:selected});$('transfer-form').hidden=true;status('Download ready: Synthetic Sunrise.svg');transfers()};
+$('transfers').onclick=transfers;
+</script></html>

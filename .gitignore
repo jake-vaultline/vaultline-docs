@@ -72,3 +72,6 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+
+# Local baseline logs contain machine-specific paths; curated verification is in docs/.
+/evidence/

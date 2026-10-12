@@ -1,0 +1,23 @@
+{
+  "id": "studio",
+  "label": "Synthetic Studio",
+  "product": "Synthetic Archive",
+  "version": "fixture-1.0.0",
+  "platform": "macOS / Chromium",
+  "modules": [
+    "core",
+    "archive",
+    "relay"
+  ],
+  "synthetic": true,
+  "config": {
+    "collections": true,
+    "remoteTransfer": true,
+    "workstation": "Synthetic review workstation"
+  },
+  "overrides": {
+    "search-collection": {
+      "notes": "Use the collection prefix STUDIO- for this synthetic deployment."
+    }
+  }
+}

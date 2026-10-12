@@ -1,0 +1,259 @@
+{
+  "product": "Media Nexus",
+  "version_file": "product/product.json",
+  "version_key": "coreVersion",
+  "modules": [
+    "core",
+    "archive",
+    "relay"
+  ],
+  "guides": [
+    {
+      "modules": [
+        "archive"
+      ],
+      "dependencies": [
+        "vaultline_server.py",
+        "vaultline_archive_search.py",
+        "product/modules/archive.json"
+      ],
+      "review": [
+        "Source-supported draft only. No running synthetic Media Nexus journey has been captured at this exact revision.",
+        "Confirm deployment permissions, feature flags and indexed media before publishing."
+      ],
+      "id": "search-collection",
+      "title": "Search the archive and create a collection",
+      "summary": "Find indexed media and group selected assets without moving source files.",
+      "requires": {
+        "collections": true
+      },
+      "prerequisites": [
+        "Archive and Collections must be enabled.",
+        "Sign in with permission to manage collections. Guest access does not grant collection editing.",
+        "The archive must contain indexed media."
+      ],
+      "steps": [
+        {
+          "title": "Search media",
+          "instruction": "Open Archive, enter a known indexed filename or term in Search media and submit the search.",
+          "expected": "Search results contain indexed media matching the submitted query; verify the asset names before selecting."
+        },
+        {
+          "title": "Select and create",
+          "instruction": "Select the desired media using the asset selection control. Choose Add to collection, enter a Collection name under OR CREATE NEW, optionally enter purpose or handoff context, then choose Create and add.",
+          "expected": "The new collection is created with the selected assets."
+        },
+        {
+          "title": "Verify membership",
+          "instruction": "Open Collections, open the newly named collection, and check that it contains the selected assets.",
+          "expected": "Collection members are visible; grouping does not move the source files."
+        }
+      ],
+      "expected": [
+        "The selected media appears in the named collection without moving originals."
+      ],
+      "recovery": [
+        "If the archive catalog cannot load, use Retry catalog when offered, then repeat the search.",
+        "If Create and add is disabled, check that Collection name is nonempty. Confirm collection-edit permission with the administrator."
+      ],
+      "evidence": [
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "SearchField label=\"Search media\""
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "OR CREATE NEW"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Create and add"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Group assets without moving files"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Retry catalog"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "canManageCollections"
+        }
+      ]
+    },
+    {
+      "modules": [
+        "archive"
+      ],
+      "dependencies": [
+        "vaultline_server.py",
+        "vaultline_archive_search.py",
+        "product/modules/archive.json"
+      ],
+      "review": [
+        "Source-supported draft only. No running synthetic Media Nexus journey has been captured at this exact revision.",
+        "Confirm deployment permissions, feature flags and indexed media before publishing."
+      ],
+      "id": "download-media",
+      "title": "Download selected media",
+      "summary": "Prepare a browser download from selected archive media. This guide covers the remote method; drive and advanced transfers require separate qualification.",
+      "requires": {
+        "remoteTransfer": true,
+        "canEdit": true
+      },
+      "prerequisites": [
+        "Archive remoteTransfer must be enabled and your signed-in account must have transfer permission.",
+        "Use Chrome or Edge on the destination device with a save-location picker.",
+        "Select media whose requested rendition is ready; missing renditions are not replaced with originals."
+      ],
+      "steps": [
+        {
+          "title": "Choose media and rendition",
+          "instruction": "Select archive media and choose Transfer. In Rendition choose an available Original, Web proxy, or Edit proxy when enabled.",
+          "expected": "The preview reports the requested and ready files. Missing renditions are identified."
+        },
+        {
+          "title": "Prepare download",
+          "instruction": "Choose Download to this device, inspect the preview, then choose Prepare download.",
+          "expected": "Transfers opens with download preparation progress. Multiple ready files are packaged together."
+        },
+        {
+          "title": "Choose a save location",
+          "instruction": "When the prepared transfer is ready, choose Choose save location and pick a destination file on this device. Wait for the save operation to finish.",
+          "expected": "The interface reports saving progress; the saved file is present at the location you selected."
+        }
+      ],
+      "expected": [
+        "The selected ready renditions are saved to the chosen device location. Verify the finished save before using the file."
+      ],
+      "recovery": [
+        "If the browser cannot open a save-location picker, open Media Nexus in Chrome or Edge.",
+        "If preparation failed or the prepared artifact expired, inspect the transfer error and use Prepare again after resolving the reported cause.",
+        "If saving was interrupted within the current session and Resume save is offered, use it to continue the save. Do not treat preparation as a completed download."
+      ],
+      "evidence": [
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "function TransferModal("
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Missing renditions are never replaced with originals."
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Download to this device"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Prepare download"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Choose save location"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Resume save"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Open Media Nexus in Chrome or Edge on this device."
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Prepare again"
+        }
+      ]
+    },
+    {
+      "modules": [
+        "archive"
+      ],
+      "dependencies": [
+        "vaultline_server.py",
+        "vaultline_archive_search.py",
+        "product/modules/archive.json"
+      ],
+      "review": [
+        "Source-supported draft only. No running synthetic Media Nexus journey has been captured at this exact revision.",
+        "Confirm deployment permissions, feature flags and indexed media before publishing."
+      ],
+      "id": "interrupted-transfer",
+      "title": "Diagnose an interrupted transfer",
+      "summary": "Distinguish preparation failure from an interrupted browser save before choosing recovery.",
+      "requires": {
+        "remoteTransfer": true,
+        "canEdit": true
+      },
+      "prerequisites": [
+        "Archive remote download and transfer-edit permission must be enabled.",
+        "You must be able to open the relevant transfer record in Transfers."
+      ],
+      "steps": [
+        {
+          "title": "Inspect the transfer",
+          "instruction": "Open Transfers, find the affected record using Search transfer history, and expand its summary. Record its mode, status, progress, artifact readiness and displayed error.",
+          "expected": "Transfer details expose the reported error and file status. Preparation and downloaded byte counts are shown separately."
+        },
+        {
+          "title": "Choose the supported recovery",
+          "instruction": "For failed, cancelled, interrupted or expired remote preparation, resolve the displayed cause and use Prepare again. For a partial browser save, use Resume save when offered. If Source version required is displayed, start a new transfer with the producer's full size and SHA-256 as instructed.",
+          "expected": "Preparation and save controls match the reported condition. A source-version error is not treated as a resumable completed source."
+        },
+        {
+          "title": "Verify recovery",
+          "instruction": "Wait for the prepared artifact to be ready, choose a save location, and verify that the save finishes. If the error remains, retain the record and seek support with the transfer identifier and sanitized error.",
+          "expected": "A ready artifact and completed local save are separate checks. An unresolved error remains a support case."
+        }
+      ],
+      "expected": [
+        "Recovery uses the control for the observed failure stage; a prepared artifact alone does not establish a completed device download."
+      ],
+      "recovery": [
+        "For missing derivatives, generate the missing proxy type only when that action is offered and you have processing permission. Reinspect the transfer before preparing again.",
+        "Do not remove a failed record before preserving the identifier and sanitized error for support."
+      ],
+      "evidence": [
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Search transfer history"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "detail&&detail.error"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "preparationBytes"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "transferredBytes"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Prepare again"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Resume save"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Source version required"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "producer's full size and SHA-256"
+        },
+        {
+          "path": "vaultline_app.jsx",
+          "anchor": "Generate missing"
+        }
+      ]
+    }
+  ]
+}
