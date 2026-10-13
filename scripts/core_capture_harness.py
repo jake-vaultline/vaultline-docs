@@ -129,6 +129,7 @@ def runtime_environment(root, config_path, inherited=None):
         "VAULTLINE_CONFIG_PATH": str(config_path),
         "VAULTLINE_DATABASE_HOME": str(root / "database"),
         "VAULTLINE_DERIVATIVE_HOME": str(root / "derivatives"),
+        "VAULTLINE_VOLUME_DISCOVERY_ROOTS": str(root / "discovery"),
         "VAULTLINE_NODE_ID": "docs-node",
         "VAULTLINE_MEDIA_ORIGINALS_CONFIGURED": "false",
         "VAULTLINE_NONINTERACTIVE": "1",
@@ -248,6 +249,21 @@ def configure_python_runtime(root):
             "pycache_prefix": sys.pycache_prefix}
 
 
+def verify_discovery_isolation(agent, root, listdir=None):
+    """Prove Core can enumerate only the empty process-owned synthetic boundary."""
+    boundary = Path(root) / "discovery"
+    if boundary.is_symlink() or not boundary.is_dir():
+        raise HarnessError("synthetic volume discovery boundary must be a real private directory")
+    expected = str(boundary.resolve())
+    actual = tuple(str(Path(path).resolve()) for path in agent.volume_discovery_roots())
+    if actual != (expected,):
+        raise HarnessError("Core volume discovery is not confined to the synthetic private boundary")
+    entries = (os.listdir if listdir is None else listdir)(expected)
+    if entries:
+        raise HarnessError("synthetic volume discovery boundary must be empty before Core starts")
+    return {"root": "$PRIVATE_ROOT/discovery", "entries": 0}
+
+
 def seed_synthetic_catalog(db, root, con):
     """Create the one synthetic asset used by the frozen Core UI journey."""
     db.upsert_volume(con, {"id": "docs-volume", "label": "Synthetic Ridge Archive",
@@ -274,14 +290,22 @@ def verify_search_seed(con, archive_search):
     ).fetchone()
     result = archive_search.search_auto(con, "Ridge Sunrise.mp4", limit=10)
     result_ids = [item.get("asset", {}).get("id") for item in result.get("results", [])]
+    volumes = [dict(row) for row in con.execute(
+        "SELECT id,label,mount FROM volumes ORDER BY id"
+    ).fetchall()]
+    expected_volumes = [{"id": "docs-volume", "label": "Synthetic Ridge Archive",
+                         "mount": "/synthetic/docs"}]
     if not lexical or ASSET_ID not in result_ids:
         raise HarnessError("synthetic asset is not ready in Core's actual Archive search projection")
+    if volumes != expected_volumes:
+        raise HarnessError("Core database volume state contains data outside the declared fixture")
     return {
         "asset_id": ASSET_ID,
         "archive_search_dirty": bool(state["dirty"]),
         "archive_search_generation": int(state["generation"]),
         "index_state": result.get("indexState"),
         "result_ids": result_ids,
+        "volumes": volumes,
     }
 
 
@@ -291,7 +315,7 @@ def serve(args):
     root = Path(identity["private_root"])
     root.mkdir(parents=True, mode=0o700)
     os.chmod(root, 0o700)
-    for name in ("database", "derivatives", "media", "control", "cache", "images", "home", "tmp"):
+    for name in ("database", "derivatives", "discovery", "media", "control", "cache", "images", "home", "tmp"):
         (root / name).mkdir(mode=0o700)
     config_path = root / "control/runtime-config.json"
     write_private(config_path, runtime_config(root))
@@ -301,6 +325,8 @@ def serve(args):
     python_runtime = configure_python_runtime(root)
     sys.path.insert(0, identity["core_root"])
     import vaultline_config as core_config
+    import vaultline_agent as core_agent
+    discovery_boundary = verify_discovery_isolation(core_agent, root)
     manifest = read_json(args.manifest)
     effective_projection = validate_effective_identity(core_config.CONFIG, manifest)
     identity["config_sha256"] = digest(effective_projection)
@@ -380,6 +406,7 @@ def serve(args):
     identity["port"] = httpd.server_port
     control = {**identity, "pid": os.getpid(), "start_uid": os.getuid(),
                "url": f"http://127.0.0.1:{httpd.server_port}",
+               "discovery_boundary": discovery_boundary,
                "search_seed": search_seed,
                "python_runtime": python_runtime,
                "runtime_argv": sys.argv, "runtime_env_names": sorted(name for name in os.environ

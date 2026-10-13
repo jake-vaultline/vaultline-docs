@@ -183,6 +183,10 @@ class CoreCaptureHarnessTests(unittest.TestCase):
                         source.index('sys.path.insert(0, identity["core_root"])'))
         self.assertLess(source.index("configure_python_runtime(root)"),
                         source.index("import vaultline_config as core_config"))
+        self.assertLess(source.index("os.environ.update(closed_env)"),
+                        source.index("import vaultline_agent as core_agent"))
+        self.assertLess(source.index("verify_discovery_isolation(core_agent, root)"),
+                        source.index("import vaultline_server as server"))
 
     def test_persistence_proof_requires_member_and_unchanged_source(self):
         contract = {"path": "/__vaultline_docs/proof", "after_step": 2,
@@ -217,6 +221,7 @@ class CoreCaptureHarnessTests(unittest.TestCase):
             env = HARNESS.runtime_environment(root, root / "runtime.json", inherited)
             self.assertEqual(env["HOME"], str(root / "home"))
             self.assertEqual(env["VAULTLINE_CONFIG_PATH"], str(root / "runtime.json"))
+            self.assertEqual(env["VAULTLINE_VOLUME_DISCOVERY_ROOTS"], str(root / "discovery"))
             for name in inherited:
                 if name != "PATH":
                     self.assertNotIn(name, env)
@@ -255,6 +260,78 @@ class CoreCaptureHarnessTests(unittest.TestCase):
         self.assertEqual(projected, manifest["config"])
         self.assertTrue(projected["coreEffective"]["features"]["nlSearch"])
         self.assertNotIn("canonicalOrigin", projected)
+
+    def test_discovery_boundary_refuses_foreign_or_nonempty_roots_before_enumeration(self):
+        class Agent:
+            def __init__(self, roots):
+                self.roots = roots
+
+            def volume_discovery_roots(self):
+                return self.roots
+
+        with tempfile.TemporaryDirectory(dir=Path.home()) as temp:
+            root = Path(temp)
+            boundary = root / "discovery"
+            boundary.mkdir()
+            calls = []
+
+            def confined_listdir(path):
+                calls.append(path)
+                self.assertEqual(path, str(boundary.resolve()))
+                return []
+
+            evidence = HARNESS.verify_discovery_isolation(
+                Agent((str(boundary),)), root, confined_listdir)
+            self.assertEqual(evidence, {"root": "$PRIVATE_ROOT/discovery", "entries": 0})
+            self.assertEqual(calls, [str(boundary.resolve())])
+
+            calls.clear()
+            with self.assertRaisesRegex(HARNESS.HarnessError, "not confined"):
+                HARNESS.verify_discovery_isolation(
+                    Agent(("/foreign-host-volumes",)), root, confined_listdir)
+            self.assertEqual(calls, [])
+
+            (boundary / "undeclared-volume").mkdir()
+            with self.assertRaisesRegex(HARNESS.HarnessError, "must be empty"):
+                HARNESS.verify_discovery_isolation(
+                    Agent((str(boundary),)), root, os.listdir)
+
+    def test_pinned_core_honors_private_discovery_override_without_server_import(self):
+        core = Path(os.environ.get(
+            "VAULTLINE_DOCS_CORE_ROOT",
+            "/Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source",
+        ))
+        if not core.is_dir():
+            self.skipTest("exact pinned Core source view unavailable")
+        self.assertEqual(HARNESS.git(core, "rev-parse", "HEAD"), HARNESS.EXPECTED_CORE_REVISION)
+        self.assertEqual(HARNESS.git(core, "status", "--porcelain"), "")
+        with tempfile.TemporaryDirectory(dir=Path.home()) as temp:
+            private = Path(temp)
+            for name in ("database", "derivatives", "discovery", "home", "tmp", "cache"):
+                (private / name).mkdir()
+            config_path = private / "runtime.json"
+            HARNESS.write_private(config_path, HARNESS.runtime_config(private))
+            script = """
+import importlib.util,json,os,pathlib,sys
+spec=importlib.util.spec_from_file_location('core_capture_harness',sys.argv[1])
+h=importlib.util.module_from_spec(spec);spec.loader.exec_module(h)
+root=pathlib.Path(sys.argv[3]);config_path=pathlib.Path(sys.argv[4])
+closed=h.runtime_environment(root,config_path,{'PATH':os.environ.get('PATH','/usr/bin:/bin')})
+os.environ.clear();os.environ.update(closed);h.configure_python_runtime(root)
+sys.path.insert(0,sys.argv[2])
+import vaultline_config
+import vaultline_agent
+print(json.dumps(h.verify_discovery_isolation(vaultline_agent,root),sort_keys=True))
+"""
+            result = subprocess.run(
+                ["/usr/bin/python3", "-B", "-c", script,
+                 str(ROOT / "scripts/core_capture_harness.py"), str(core), str(private),
+                 str(config_path)],
+                cwd=ROOT, text=True, capture_output=True, check=False,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout.strip().splitlines()[-1]),
+                         {"root": "$PRIVATE_ROOT/discovery", "entries": 0})
 
     def test_seeded_asset_is_searchable_while_projection_is_dirty(self):
         core = Path(os.environ.get(
@@ -301,6 +378,9 @@ finally:
         self.assertEqual(result.returncode, 0, result.stderr)
         evidence = json.loads(result.stdout.strip().splitlines()[-1])
         self.assertEqual(evidence["result_ids"], [HARNESS.ASSET_ID])
+        self.assertEqual(evidence["volumes"], [{"id": "docs-volume",
+                                                 "label": "Synthetic Ridge Archive",
+                                                 "mount": "/synthetic/docs"}])
         self.assertTrue(evidence["archive_search_dirty"])
         self.assertEqual(evidence["index_state"], "stale")
 

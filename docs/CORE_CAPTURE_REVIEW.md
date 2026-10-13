@@ -1,7 +1,9 @@
-# Core 1.0.158 search-selection recovery candidate
+# Core 1.0.158 synthetic volume-boundary recovery candidate
 
-This successor preserves the accepted capture contract and repairs the search prerequisite exposed
-by the retained second runtime attempt. It remains frozen for distinct review before any runtime,
+The accepted search-selection candidate completed all three real-Core actions and persistence checks
+in capture three. Image review remains on hold because every PNG also contains an undeclared host
+volume-discovery notice. This successor confines discovery to an empty process-owned synthetic
+directory before Core imports. It remains frozen for distinct review before another runtime,
 browser, capture or Portal operation. It serves the real
 Core backend and generated frontend from signed source
 `98a373276de75fcf9510dfb02ffb89778b8ea324`. It does not use the Vaultline Docs screenshot fixture.
@@ -36,7 +38,12 @@ sets `sys.dont_write_bytecode` and binds `sys.pycache_prefix` to the private cac
 and locale inputs plus private `HOME`, `TMPDIR`, config, database, derivative, cache and node paths.
 Ambient deployment, signed-runtime, site-overlay, access-state, provider and credential selectors
 are not copied or read. A focused regression supplies hostile selector paths and confirms they are
-absent from the effective Core configuration.
+absent from the effective Core configuration. The closed environment also sets Core's documented
+`VAULTLINE_VOLUME_DISCOVERY_ROOTS` disposable-host override to `$PRIVATE_ROOT/discovery`. The
+harness creates that directory empty, rejects symlinks, rejects any other Core discovery root, and
+rejects any entry before importing the Core server. This prevents `/api/volumes/detected` from
+enumerating the host's ordinary `/Volumes` boundary while leaving the real authenticated API and UI
+unchanged.
 
 ## Reviewable source-only check
 
@@ -50,15 +57,16 @@ create the runtime root.
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
   --recipes examples/media-nexus-core-1.0.158-recipes.json \
   --manifest examples/deployments/core-1.0.158-docs.json \
-  --root /Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3
+  --root /Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt4
 ```
 
 The reported 2 GiB root growth, 2 GiB RSS and 32 processes are planning envelopes for entry and
-terminal measurement, not enforced quotas. The earlier 2 GiB allocation was explicitly released and
-cannot be reused. Browser work is one serial private headless job. Task8 must obtain a new measured
-normal allocation and recheck the active VLP-2189 claim, genuine free space, current process/memory
-use, the unused private root, clean exact Core source, and a free OS-assigned loopback port before
-execution.
+terminal measurement, not enforced quotas. The current capture-three allocation remains charged and
+covers retained attempt-three evidence plus a possible attempt four; released older allocations are
+not reused. Browser work is one serial private headless job. Task8 must rebind the current allocation
+and partial measured growth, then recheck the active VLP-2189 claim, genuine free space, current
+process/memory use, the unused private root, clean exact Core source, and a free OS-assigned loopback
+port before execution within the existing 16:15 UTC work end.
 
 The source-only correction check is:
 
@@ -67,8 +75,9 @@ VAULTLINE_DOCS_CORE_ROOT=/Users/jakehalperin/Developer/Vaultline/worktrees/core/
   .venv/bin/python -m unittest tests.test_core_capture -v
 ```
 
-It runs focused tests, including the real pinned Core config loader and an isolated database/search
-projection check, without importing the Core server or starting a listener. The Docs virtual
+It runs focused tests, including the real pinned Core config loader, the actual Core agent's
+disposable-host discovery override, fail-closed foreign/nonempty boundary sentinels, and an isolated
+database/search projection check. It does not import the Core server or start a listener. The Docs virtual
 environment is Python 3.9.6 and supplies Playwright,
 Markdown, ReportLab and Pillow. It does not supply Flask or Werkzeug, so the Core server command is
 bound separately to the existing `/usr/bin/python3` environment. That interpreter supplies Flask,
@@ -92,11 +101,16 @@ The failed first-attempt root at
 logs and failure evidence. The failed second-attempt root at
 `/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2` also remains
 preserved. Its terminal receipt records zero retained PNGs, no complete guide, `Portal: NOT_RUN`,
-owned-process closure, and release of the prior resource allocation. Only after this successor is
-accepted and a new measured allocation is admitted may Task8 use the presently unused root below.
+owned-process closure, and release of the prior resource allocation. Capture three at
+`/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3` remains preserved
+with its functional package, three genuine screenshots, persistence evidence, image hold and closure.
+Its exact review is `ACTUAL-CAPTURE3-IMAGES-AND-PERSISTENCE-REVIEW.md` SHA-256
+`d2cc6931b277dbdc466b481feb9880cb96688029a4bc80fa4ee92108fe85326d`.
+Only after this successor is accepted and current controls are rebound may Task8 use the presently
+unused root below.
 
 ```bash
-ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3
+ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt4
 /usr/bin/python3 -B scripts/core_capture_harness.py serve \
   --core-root /Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source \
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
@@ -108,8 +122,8 @@ ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-a
 In a second private terminal, after checking `ready.json` and retaining its exact URL:
 
 ```bash
-ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3
-CORE_URL="$(python3 -c 'import json; print(json.load(open("/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3/control/ready.json"))["url"])')"
+ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt4
+CORE_URL="$(python3 -c 'import json; print(json.load(open("/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt4/control/ready.json"))["url"])')"
 .venv/bin/python -m vaultline_docs generate \
   --repo /Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source \
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
@@ -131,7 +145,8 @@ network origin, or expected result withholds the screenshot and package.
 
 Before writing `control/ready.json`, the harness now runs Core's actual `search_auto` against the
 seeded database and requires the exact asset ID. The ready record retains the returned ID, index
-state, and dirty-generation state. The first screenshot step independently waits for both
+state, dirty-generation state, exact single synthetic volume, and empty private discovery boundary.
+The first screenshot step independently waits for both
 `#asset-card-docs-ridge-sunrise` and the exact selectable button. Text left in the search input can
 therefore no longer satisfy result readiness, and a guest/non-editable rendering fails before any
 screenshot is accepted.
@@ -160,7 +175,7 @@ lock mismatch, missing build files, or a build older than its tracked runtime in
 After screenshot review, run the focused package-specific flow with fresh output:
 
 ```bash
-ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3
+ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt4
 PACKAGE="$ROOT/packages/PACKAGE_ID"
 PACKET="$ROOT/core-1.0.158.portal.json"
 .venv/bin/python scripts/qualify_core_guide_portal.py \
