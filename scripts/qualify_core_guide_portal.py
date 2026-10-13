@@ -210,6 +210,11 @@ def browser_sha(page, url):
     })""", url)
 
 
+def source_revision_metadata(docs, source_revision):
+    return docs.locator(".support-docs-footer details code").get_by_text(
+        source_revision, exact=True)
+
+
 def run(args):
     portal_identity = verify_portal_runtime(args.portal_source, args.portal_runtime, args.portal_revision)
     packet, image_hashes = verify_package(args.package, args.packet)
@@ -271,7 +276,7 @@ def run(args):
             docs.get_by_label("Import draft package").set_input_files(str(args.packet))
             expect(docs.get_by_label("Documentation version")).to_be_visible()
             docs.get_by_text("Version and source details", exact=True).click()
-            expect(docs.get_by_text(packet["sourceRevision"], exact=False)).to_be_visible()
+            expect(source_revision_metadata(docs, packet["sourceRevision"])).to_be_visible()
             expect(support_guides(client_a).get_by_text("No guides published yet", exact=True)).to_be_visible()
             revision = admin.evaluate("fetch('/api/support-docs?organizationId=org_a').then(r=>r.json())")["revisions"][0]["id"]
             denied_revision = client_b.evaluate("url=>fetch(url).then(r=>r.status)",

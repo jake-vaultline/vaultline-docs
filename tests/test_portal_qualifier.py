@@ -32,6 +32,19 @@ class FixtureTransport:
         return [dict(self.system)]
 
 
+class RecordingLocator:
+    def __init__(self):
+        self.calls = []
+
+    def locator(self, selector):
+        self.calls.append(("locator", selector))
+        return self
+
+    def get_by_text(self, value, exact=False):
+        self.calls.append(("get_by_text", value, exact))
+        return self
+
+
 class PortalQualifierFixtureTests(unittest.TestCase):
     def test_exact_packet_seeds_only_expected_synthetic_system_and_reads_back(self):
         transport = FixtureTransport()
@@ -71,6 +84,18 @@ class PortalQualifierFixtureTests(unittest.TestCase):
             QUALIFIER.configure_fixture_system(
                 "http://portal.example.test:54321", packet(), transport=transport)
         self.assertEqual(transport.calls, [])
+
+    def test_source_revision_targets_exact_metadata_code_when_release_notes_repeat_sha(self):
+        revision = "98a373276de75fcf9510dfb02ffb89778b8ea324"
+        release_notes = f"# Draft release notes\n\nSource revision: `{revision}`"
+        self.assertIn(revision, release_notes)
+        docs = RecordingLocator()
+        result = QUALIFIER.source_revision_metadata(docs, revision)
+        self.assertIs(result, docs)
+        self.assertEqual(docs.calls, [
+            ("locator", ".support-docs-footer details code"),
+            ("get_by_text", revision, True),
+        ])
 
 
 if __name__ == "__main__":

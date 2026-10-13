@@ -183,7 +183,7 @@ PACKET="$ROOT/core-1.0.158.portal.json"
   --portal-runtime /Users/jakehalperin/Developer/Vaultline/worktrees/client-portal/vlp-1971-vaultline-docs \
   --portal-revision ce77a0ce867e5229d9fdef9f94179cc048c2d3d3 \
   --package "$PACKAGE" --packet "$PACKET" \
-  --output "$ROOT/portal-qualification-attempt2"
+  --output "$ROOT/portal-qualification-attempt3"
 ```
 
 The script accepts only the actual one-guide packet and verifies package checksums, source/package/
@@ -194,9 +194,11 @@ surface to bind only synthetic `org_a` / `sys_a` to the packet's exact `1.0.158`
 non-loopback fixture origins fail closed. Its browser flow proves draft invisibility, administrator
 review, local synthetic publication, client rendering, private image bytes, a one-guide/three-image
 ZIP, cross-client revision/image/download denial, and withdrawal. It never targets a hosted Portal.
-The first Portal attempt was retained at `portal-qualification/` after the unchanged fixture profile
-correctly caused the production compatibility guard to refuse the package. The retry must use the
-new output above only after the distinct reviewer accepts this exact source. The existing hosted
+The first Portal attempt remains at `portal-qualification/`; the second remains at
+`portal-qualification-attempt2/` after its broad source-revision locator matched both the metadata
+field and draft release notes. The next retry must use the new output above only after the distinct
+reviewer accepts this exact source and Task8 obtains fresh measured runtime authority and resources.
+The existing hosted
 migration, production deployment and authenticated readback are already qualified and are not repeated.
 
 Stop the owned Core process, confirm its PID and listener are gone, retain `control/stopped.json`,
