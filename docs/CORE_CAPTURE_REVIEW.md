@@ -1,7 +1,8 @@
-# Core 1.0.158 capture correction candidate
+# Core 1.0.158 search-selection recovery candidate
 
-This successor corrects the five findings in the distinct review of `2c15d384`. It remains frozen
-for distinct review before any runtime, browser, capture or Portal operation. It serves the real
+This successor preserves the accepted capture contract and repairs the search prerequisite exposed
+by the retained second runtime attempt. It remains frozen for distinct review before any runtime,
+browser, capture or Portal operation. It serves the real
 Core backend and generated frontend from signed source
 `98a373276de75fcf9510dfb02ffb89778b8ea324`. It does not use the Vaultline Docs screenshot fixture.
 
@@ -13,14 +14,19 @@ Core backend and generated frontend from signed source
 - Recipes: `examples/media-nexus-core-1.0.158-recipes.json`
 - Deployment: `examples/deployments/core-1.0.158-docs.json`
 - Guide: `search-collection` only
-- Manifest and effective-config projection SHA-256: `9a56c2768e445225528bd2185a3f15073952179960ae4e43b1d3dd25fd7c62af`
-- Guide evidence/action binding: `58d4452cce4d772c83abe3759a97a281f1df8ab11b89a039b8579245536f3f48`
+- Manifest and effective-config projection SHA-256: `d9abf5f111b7865e68473b5d04ad38081c4a7358afd6a3988b2d28444e2cfaea`
+- Guide evidence/action binding: `9629db906beaa9f49f69f311badc056f7e8174cbaafa5486ca4208745ade456d`
 - Synthetic source-locator SHA-256: `5931da49bb3534bbfa560558631145d0d7253a7221900103ef17eef9ff273259`
 
 The manifest carries `core` and `archive`, version `1.0.158`, a stable projection of the actual
-effective Core configuration, and a separately stored `ARCHIVE-DOCS-` deployment note. The harness
-loads the configuration with pinned Core's own schema and refuses any difference between the
-effective projection and manifest. The deployment remains an uninstalled synthetic source test:
+effective Core configuration, and a separately stored `ARCHIVE-DOCS-` deployment note. It enables
+`features.nlSearch` because pinned Core's main search UI always posts `auto:true` to `/api/search`,
+and that route returns 404 before search when the feature is disabled. The retained attempt-two log
+contains that exact 404. A focused isolated Core database check further proves that `upsert_asset`
+immediately populates `archive_lexical_fts` and exact-filename `search_auto` returns
+`docs-ridge-sunrise` even while the rebuildable search state remains dirty and reports `stale`.
+The harness loads the configuration with pinned Core's own schema and refuses any difference
+between the effective projection and manifest. The deployment remains an uninstalled synthetic source test:
 `product.generated` is false and no commissioned profile or access origin is claimed. Generation
 keeps the shared guide and override separate. The package continues to include `LICENSE`, `COPYING`,
 `NOTICE`, source metadata and checksums.
@@ -44,13 +50,15 @@ create the runtime root.
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
   --recipes examples/media-nexus-core-1.0.158-recipes.json \
   --manifest examples/deployments/core-1.0.158-docs.json \
-  --root /Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2
+  --root /Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3
 ```
 
 The reported 2 GiB root growth, 2 GiB RSS and 32 processes are planning envelopes for entry and
-terminal measurement, not enforced quotas. Browser work is one serial private headless job. Task8
-must recheck the active VLP-2189 claim, free space, current process/memory use, the unused private
-root, clean exact Core source, and a free OS-assigned loopback port before execution.
+terminal measurement, not enforced quotas. The earlier 2 GiB allocation was explicitly released and
+cannot be reused. Browser work is one serial private headless job. Task8 must obtain a new measured
+normal allocation and recheck the active VLP-2189 claim, genuine free space, current process/memory
+use, the unused private root, clean exact Core source, and a free OS-assigned loopback port before
+execution.
 
 The source-only correction check is:
 
@@ -59,12 +67,16 @@ VAULTLINE_DOCS_CORE_ROOT=/Users/jakehalperin/Developer/Vaultline/worktrees/core/
   .venv/bin/python -m unittest tests.test_core_capture -v
 ```
 
-It runs focused tests, including the real pinned Core config loader, without importing the Core
-server or starting a listener. The Docs virtual environment is Python 3.9.6 and supplies Playwright,
+It runs focused tests, including the real pinned Core config loader and an isolated database/search
+projection check, without importing the Core server or starting a listener. The Docs virtual
+environment is Python 3.9.6 and supplies Playwright,
 Markdown, ReportLab and Pillow. It does not supply Flask or Werkzeug, so the Core server command is
 bound separately to the existing `/usr/bin/python3` environment. That interpreter supplies Flask,
 Werkzeug, Waitress and Faster Whisper used by this bounded path; its missing optional `segno` module
 is imported only by the unexercised mobile QR function and is not installed by this phase.
+The isolated database regression replaces only Core's macOS volume-locality probe after loading the
+private synthetic configuration; this avoids depending on `diskutil` during a source check. The
+serve path retains Core's real storage preflight and does not patch or disable that guard.
 
 ## Reviewed runtime sequence for Task8
 
@@ -77,10 +89,14 @@ is read.
 
 The failed first-attempt root at
 `/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-review` remains preserved with its
-logs and failure evidence. Attempt two uses the separate unused root below.
+logs and failure evidence. The failed second-attempt root at
+`/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2` also remains
+preserved. Its terminal receipt records zero retained PNGs, no complete guide, `Portal: NOT_RUN`,
+owned-process closure, and release of the prior resource allocation. Only after this successor is
+accepted and a new measured allocation is admitted may Task8 use the presently unused root below.
 
 ```bash
-ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2
+ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3
 /usr/bin/python3 -B scripts/core_capture_harness.py serve \
   --core-root /Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source \
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
@@ -92,8 +108,8 @@ ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-a
 In a second private terminal, after checking `ready.json` and retaining its exact URL:
 
 ```bash
-ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2
-CORE_URL="$(python3 -c 'import json; print(json.load(open("/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2/control/ready.json"))["url"])')"
+ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3
+CORE_URL="$(python3 -c 'import json; print(json.load(open("/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3/control/ready.json"))["url"])')"
 .venv/bin/python -m vaultline_docs generate \
   --repo /Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source \
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
@@ -112,6 +128,13 @@ persisted `collections`, `collection_assets`, and `assets` rows and requires the
 note, one-member count, and unchanged source-locator digest. The final UI assertion is scoped to the
 opened collection breadcrumb and `#asset-card-docs-ridge-sunrise`. Missing proof, selector, identity,
 network origin, or expected result withholds the screenshot and package.
+
+Before writing `control/ready.json`, the harness now runs Core's actual `search_auto` against the
+seeded database and requires the exact asset ID. The ready record retains the returned ID, index
+state, and dirty-generation state. The first screenshot step independently waits for both
+`#asset-card-docs-ridge-sunrise` and the exact selectable button. Text left in the search input can
+therefore no longer satisfy result readiness, and a guest/non-editable rendering fails before any
+screenshot is accepted.
 
 ## Portal acceptance after Core capture
 
@@ -137,7 +160,7 @@ lock mismatch, missing build files, or a build older than its tracked runtime in
 After screenshot review, run the focused package-specific flow with fresh output:
 
 ```bash
-ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2
+ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt3
 PACKAGE="$ROOT/packages/PACKAGE_ID"
 PACKET="$ROOT/core-1.0.158.portal.json"
 .venv/bin/python scripts/qualify_core_guide_portal.py \

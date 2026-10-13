@@ -29,7 +29,7 @@
         "brand": false,
         "tagging": false,
         "transcription": false,
-        "nlSearch": false,
+        "nlSearch": true,
         "advancedSearch": true,
         "remoteTransfer": false,
         "fileTransfers": false

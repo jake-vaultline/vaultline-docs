@@ -227,7 +227,7 @@ def runtime_config(root):
         "branding": {"badge": "Docs Synthetic"},
         "features": {"collections": True, "publicRead": False, "relay": False,
                      "photo": False, "review": False, "post": False, "brand": False,
-                     "tagging": False, "transcription": False, "nlSearch": False,
+                     "tagging": False, "transcription": False, "nlSearch": True,
                      "advancedSearch": True, "remoteTransfer": False, "fileTransfers": False},
         "storage": {"autoIndex": False, "databaseHome": str(root / "database"),
                     "derivativeHome": str(root / "derivatives"), "roots": []},
@@ -246,6 +246,43 @@ def configure_python_runtime(root):
     sys.pycache_prefix = str(Path(root) / "cache")
     return {"dont_write_bytecode": sys.dont_write_bytecode,
             "pycache_prefix": sys.pycache_prefix}
+
+
+def seed_synthetic_catalog(db, root, con):
+    """Create the one synthetic asset used by the frozen Core UI journey."""
+    db.upsert_volume(con, {"id": "docs-volume", "label": "Synthetic Ridge Archive",
+                           "kind": "Test", "mount": "/synthetic/docs", "online": 1})
+    media = Path(root) / "media/Ridge Sunrise.mp4"
+    media.parent.mkdir(parents=True, exist_ok=True)
+    media.write_bytes(b"Vaultline Docs synthetic media; no client content.\n")
+    db.upsert_asset(con, {"id": ASSET_ID, "name": media.name,
+        "volume_id": "docs-volume", "folder": "Ridge/Selects",
+        "path": ASSET_SOURCE_PATH,
+        "ext": "mp4", "media_type": "video", "classification": "Camera Original",
+        "size_bytes": media.stat().st_size, "duration_sec": 12, "indexed_at": db.now(),
+        "availability": "online", "proxy_status": "None", "transcript_status": "None"})
+    con.commit()
+
+
+def verify_search_seed(con, archive_search):
+    """Fail before serving unless Core's real one-box search returns the seeded asset."""
+    lexical = con.execute(
+        "SELECT asset_id FROM archive_lexical_fts WHERE asset_id=?", (ASSET_ID,)
+    ).fetchone()
+    state = con.execute(
+        "SELECT dirty,generation FROM archive_search_state WHERE singleton=1"
+    ).fetchone()
+    result = archive_search.search_auto(con, "Ridge Sunrise.mp4", limit=10)
+    result_ids = [item.get("asset", {}).get("id") for item in result.get("results", [])]
+    if not lexical or ASSET_ID not in result_ids:
+        raise HarnessError("synthetic asset is not ready in Core's actual Archive search projection")
+    return {
+        "asset_id": ASSET_ID,
+        "archive_search_dirty": bool(state["dirty"]),
+        "archive_search_generation": int(state["generation"]),
+        "index_state": result.get("indexState"),
+        "result_ids": result_ids,
+    }
 
 
 def serve(args):
@@ -268,6 +305,7 @@ def serve(args):
     effective_projection = validate_effective_identity(core_config.CONFIG, manifest)
     identity["config_sha256"] = digest(effective_projection)
     import vaultline_db as db
+    import vaultline_archive_search as archive_search
     import vaultline_server as server
 
     password = secrets.token_urlsafe(32)
@@ -276,17 +314,8 @@ def serve(args):
     try:
         if not con.execute("SELECT 1 FROM users WHERE username=?", (TEST_ACCOUNT,)).fetchone():
             db.create_user(con, TEST_ACCOUNT, password, "editor", display_name="Docs Reviewer")
-        db.upsert_volume(con, {"id": "docs-volume", "label": "Synthetic Ridge Archive",
-                              "kind": "Test", "mount": "/synthetic/docs", "online": 1})
-        media = root / "media/Ridge Sunrise.mp4"
-        media.write_bytes(b"Vaultline Docs synthetic media; no client content.\n")
-        db.upsert_asset(con, {"id": ASSET_ID, "name": media.name,
-            "volume_id": "docs-volume", "folder": "Ridge/Selects",
-            "path": ASSET_SOURCE_PATH,
-            "ext": "mp4", "media_type": "video", "classification": "Camera Original",
-            "size_bytes": media.stat().st_size, "duration_sec": 12, "indexed_at": db.now(),
-            "availability": "online", "proxy_status": "None", "transcript_status": "None"})
-        con.commit()
+        seed_synthetic_catalog(db, root, con)
+        search_seed = verify_search_seed(con, archive_search)
     finally:
         con.close()
 
@@ -351,6 +380,7 @@ def serve(args):
     identity["port"] = httpd.server_port
     control = {**identity, "pid": os.getpid(), "start_uid": os.getuid(),
                "url": f"http://127.0.0.1:{httpd.server_port}",
+               "search_seed": search_seed,
                "python_runtime": python_runtime,
                "runtime_argv": sys.argv, "runtime_env_names": sorted(name for name in os.environ
                  if name.startswith("VAULTLINE_") or name in {"PYTHONPYCACHEPREFIX", "PYTHONDONTWRITEBYTECODE"})}

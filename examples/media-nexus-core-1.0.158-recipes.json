@@ -32,7 +32,8 @@
             {"op": "press", "selector": "input[aria-label='Search media']", "key": "Enter"}
           ],
           "assertions": [
-            {"selector": "body", "text": "Ridge Sunrise.mp4"}
+            {"selector": "#asset-card-docs-ridge-sunrise", "text": "Ridge Sunrise.mp4"},
+            {"selector": "button[aria-label='Select Ridge Sunrise.mp4']"}
           ]
         },
         {

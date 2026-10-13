@@ -2,6 +2,7 @@ import importlib.util
 import inspect
 import json
 import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -41,7 +42,6 @@ class CoreCaptureHarnessTests(unittest.TestCase):
             return self.live
 
     def test_inline_guide_binding_covers_runtime_actions(self):
-        import subprocess
         with tempfile.TemporaryDirectory() as temp:
             repo = Path(temp)
             subprocess.run(["git", "init", "-q", str(repo)], check=True)
@@ -89,6 +89,15 @@ class CoreCaptureHarnessTests(unittest.TestCase):
         from vaultline_docs.source import digest
         manifest = json.loads((ROOT / "examples/deployments/core-1.0.158-docs.json").read_text())
         self.assertEqual(HARNESS.digest(manifest["config"]), digest(manifest["config"]))
+
+    def test_search_step_requires_real_result_card_and_selectable_control(self):
+        recipes = json.loads(
+            (ROOT / "examples/media-nexus-core-1.0.158-recipes.json").read_text())
+        assertions = recipes["guides"][0]["steps"][0]["assertions"]
+        self.assertNotIn({"selector": "body", "text": "Ridge Sunrise.mp4"}, assertions)
+        self.assertIn({"selector": "#asset-card-docs-ridge-sunrise",
+                       "text": "Ridge Sunrise.mp4"}, assertions)
+        self.assertIn({"selector": "button[aria-label='Select Ridge Sunrise.mp4']"}, assertions)
 
     def test_live_core_proof_refuses_static_demo_mode(self):
         page = self.Page({"me": {"authenticated": True},
@@ -221,6 +230,12 @@ class CoreCaptureHarnessTests(unittest.TestCase):
             self.skipTest("exact pinned Core source view unavailable")
         self.assertEqual(HARNESS.git(core, "rev-parse", "HEAD"), HARNESS.EXPECTED_CORE_REVISION)
         self.assertEqual(HARNESS.git(core, "status", "--porcelain"), "")
+        app_source = (core / "vaultline_app.jsx").read_text()
+        server_source = (core / "vaultline_server.py").read_text()
+        self.assertIn('{q,auto:true,filters:filt,limit:60,cursor:null,requestId}', app_source)
+        self.assertIn('selectable={!isGuest}', app_source)
+        self.assertIn('if not cfg.get("features.nlSearch", True):', server_source)
+        self.assertIn('return jsonify({"error": "feature disabled"}), 404', server_source)
         manifest = json.loads((ROOT / "examples/deployments/core-1.0.158-docs.json").read_text())
         with tempfile.TemporaryDirectory() as temp:
             private = Path(temp)
@@ -238,7 +253,56 @@ class CoreCaptureHarnessTests(unittest.TestCase):
             })
             projected = HARNESS.validate_effective_identity(effective, manifest)
         self.assertEqual(projected, manifest["config"])
+        self.assertTrue(projected["coreEffective"]["features"]["nlSearch"])
         self.assertNotIn("canonicalOrigin", projected)
+
+    def test_seeded_asset_is_searchable_while_projection_is_dirty(self):
+        core = Path(os.environ.get(
+            "VAULTLINE_DOCS_CORE_ROOT",
+            "/Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source",
+        ))
+        if not core.is_dir():
+            self.skipTest("exact pinned Core source view unavailable")
+        self.assertEqual(HARNESS.git(core, "rev-parse", "HEAD"), HARNESS.EXPECTED_CORE_REVISION)
+        self.assertEqual(HARNESS.git(core, "status", "--porcelain"), "")
+        with tempfile.TemporaryDirectory(dir=Path.home()) as temp:
+            private = Path(temp)
+            for name in ("database", "derivatives", "home", "tmp", "cache", "media"):
+                (private / name).mkdir()
+            config_path = private / "runtime.json"
+            HARNESS.write_private(config_path, HARNESS.runtime_config(private))
+            script = """
+import importlib.util,json,os,pathlib,sys
+spec=importlib.util.spec_from_file_location('core_capture_harness',sys.argv[1])
+h=importlib.util.module_from_spec(spec);spec.loader.exec_module(h)
+closed=h.runtime_environment(pathlib.Path(sys.argv[3]),pathlib.Path(sys.argv[4]),
+                             {'PATH':os.environ.get('PATH','/usr/bin:/bin')})
+os.environ.clear();os.environ.update(closed)
+h.configure_python_runtime(pathlib.Path(sys.argv[3]))
+sys.path.insert(0,sys.argv[2])
+import vaultline_config as config
+config._database_home_is_local=lambda _path: True
+import vaultline_db as db
+import vaultline_archive_search as archive_search
+db.init_db();con=db.connect()
+try:
+    h.seed_synthetic_catalog(db,sys.argv[3],con)
+    print(json.dumps(h.verify_search_seed(con,archive_search),sort_keys=True))
+finally:
+    con.close()
+"""
+            result = subprocess.run(
+                ["/usr/bin/python3", "-B", "-c", script,
+                 str(ROOT / "scripts/core_capture_harness.py"), str(core), str(private),
+                 str(config_path)],
+                cwd=ROOT,
+                text=True, capture_output=True, check=False,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        evidence = json.loads(result.stdout.strip().splitlines()[-1])
+        self.assertEqual(evidence["result_ids"], [HARNESS.ASSET_ID])
+        self.assertTrue(evidence["archive_search_dirty"])
+        self.assertEqual(evidence["index_state"], "stale")
 
     def test_rejects_dirty_or_wrong_core(self):
         with tempfile.TemporaryDirectory(dir=Path.home()) as temp:
