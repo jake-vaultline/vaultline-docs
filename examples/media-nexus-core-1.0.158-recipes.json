@@ -1,0 +1,89 @@
+{
+  "product": "Media Nexus",
+  "version_file": "product/product.json",
+  "version_key": "coreVersion",
+  "modules": ["core", "archive"],
+  "guides": [
+    {
+      "id": "search-collection",
+      "title": "Search the archive and create a collection",
+      "summary": "Find indexed media and group selected assets without moving source files.",
+      "modules": ["archive"],
+      "requires": {"collections": true},
+      "dependencies": [
+        "vaultline_server.py",
+        "vaultline_db.py",
+        "vaultline_app.jsx",
+        "vaultline_archive_search.py",
+        "product/modules/archive.json"
+      ],
+      "prerequisites": [
+        "Archive and Collections must be enabled.",
+        "Sign in with permission to manage collections.",
+        "The archive must contain indexed media."
+      ],
+      "steps": [
+        {
+          "title": "Search media",
+          "instruction": "Enter Ridge Sunrise.mp4 in Search media and submit the search.",
+          "expected": "The exact indexed synthetic clip appears in the results.",
+          "actions": [
+            {"op": "fill", "selector": "input[aria-label='Search media']", "value": "Ridge Sunrise.mp4"},
+            {"op": "press", "selector": "input[aria-label='Search media']", "key": "Enter"}
+          ],
+          "assertions": [
+            {"selector": "#asset-card-docs-ridge-sunrise", "text": "Ridge Sunrise.mp4"},
+            {"selector": "button[aria-label='Select Ridge Sunrise.mp4']"}
+          ]
+        },
+        {
+          "title": "Select and create",
+          "instruction": "Select Ridge Sunrise.mp4, choose Add to collection, name the collection ARCHIVE-DOCS-SELECTS, add the synthetic-review note, and choose Create and add.",
+          "expected": "Media Nexus confirms that the collection was created.",
+          "actions": [
+            {"op": "click", "selector": "button[aria-label='Select Ridge Sunrise.mp4']"},
+            {"op": "click", "selector": "button:has-text('Add to collection')"},
+            {"op": "fill", "selector": "input[placeholder='Collection name']", "value": "ARCHIVE-DOCS-SELECTS"},
+            {"op": "fill", "selector": "textarea[placeholder='Optional purpose or handoff context']", "value": "Synthetic documentation review only"},
+            {"op": "click", "selector": "button:has-text('Create and add')"}
+          ],
+          "assertions": [
+            {"selector": ".toast", "text": "Collection created"}
+          ]
+        },
+        {
+          "title": "Verify membership",
+          "instruction": "Open Collections, open ARCHIVE-DOCS-SELECTS, and verify that Ridge Sunrise.mp4 is a member.",
+          "expected": "The collection contains the selected clip; its source path has not changed.",
+          "actions": [
+            {"op": "click", "selector": ".sidebar button:has-text('Collections')"},
+            {"op": "click", "selector": "text=ARCHIVE-DOCS-SELECTS"}
+          ],
+          "assertions": [
+            {"selector": ".archive-workspace .crumb", "text": "ARCHIVE-DOCS-SELECTS"},
+            {"selector": "#asset-card-docs-ridge-sunrise", "text": "Ridge Sunrise.mp4"}
+          ]
+        }
+      ],
+      "expected": [
+        "The selected media appears in ARCHIVE-DOCS-SELECTS without moving the synthetic source file."
+      ],
+      "recovery": [
+        "If the catalog cannot load, choose Retry catalog and repeat the exact filename search.",
+        "If Create and add is disabled, enter a nonempty collection name and confirm that the account has collection-management permission."
+      ],
+      "review": [
+        "Runtime acceptance must confirm every selector and expected result against the exact served Core revision before this draft can enter Portal review."
+      ],
+      "evidence": [
+        {"path": "vaultline_app.jsx", "anchor": "SearchField label=\"Search media\""},
+        {"path": "vaultline_app.jsx", "anchor": "aria-label={(selected?\"Deselect \":\"Select \""},
+        {"path": "vaultline_app.jsx", "anchor": "▦ Add to collection"},
+        {"path": "vaultline_app.jsx", "anchor": "OR CREATE NEW"},
+        {"path": "vaultline_app.jsx", "anchor": "Create and add"},
+        {"path": "vaultline_app.jsx", "anchor": "Group assets without moving files"},
+        {"path": "tests/backend/collection_smoke_test.py", "anchor": "self.client.post(\"/api/collections\", json={"}
+      ]
+    }
+  ]
+}

@@ -80,6 +80,11 @@ def load_guides(source, recipes):
             else:
                 guide = dict(spec)
                 evidence = [source.evidence(e) for e in spec['evidence']]
+                bindings[identifier] = digest({
+                    'evidence': evidence,
+                    'steps': [{key: step.get(key) for key in ('actions', 'assertions')}
+                              for step in guide.get('steps', [])],
+                })
                 guide['dependencies'] = [e['path'] for e in evidence] + spec.get('dependencies', [])
             if guide['id'] != identifier:
                 raise ValueError('Guide id differs from recipe')

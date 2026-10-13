@@ -1,0 +1,48 @@
+{
+  "id": "core-1-0-158-docs",
+  "label": "Media Nexus Core 1.0.158 synthetic documentation review",
+  "product": "Media Nexus",
+  "version": "1.0.158",
+  "platform": "macOS / private headless Chromium",
+  "modules": ["core", "archive"],
+  "synthetic": true,
+  "config": {
+    "collections": true,
+    "remoteTransfer": false,
+    "coreEffective": {
+      "product": {
+        "generated": false,
+        "coreVersion": "1.0.158",
+        "environment": "development",
+        "modules": ["core", "archive"]
+      },
+      "client": {
+        "deployment": "Uninstalled source test"
+      },
+      "features": {
+        "collections": true,
+        "publicRead": false,
+        "relay": false,
+        "photo": false,
+        "review": false,
+        "post": false,
+        "brand": false,
+        "tagging": false,
+        "transcription": false,
+        "nlSearch": true,
+        "advancedSearch": true,
+        "remoteTransfer": false,
+        "fileTransfers": false
+      },
+      "storage": {
+        "autoIndex": false,
+        "roots": []
+      }
+    }
+  },
+  "overrides": {
+    "search-collection": {
+      "notes": "For this synthetic deployment, documentation-review collections use the ARCHIVE-DOCS- prefix. This review-only rule is preserved separately from the shared guide."
+    }
+  }
+}
