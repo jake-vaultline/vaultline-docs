@@ -27,18 +27,28 @@ def capture(url, manifest, revision, bindings, guides, output):
         page = context.new_page()
         page.set_default_timeout(8000)
         response = page.request.get(url + '/__vaultline_docs')
+        if not response.ok:
+            raise ValueError('Test deployment identity endpoint is unavailable')
         identity = response.json()
         expected_identity = {'source_revision': revision, 'version': manifest['version'],
                              'modules': manifest['modules'], 'platform': manifest['platform'],
                              'config_sha256': digest(manifest.get('config', {})),
                              'contracts': bindings, 'synthetic': True, 'test_account': 'docs-reviewer'}
-        if identity != expected_identity:
+        if {key: value for key, value in identity.items() if key != 'capture_session'} != expected_identity:
             raise ValueError('Test deployment identity does not match source/manifest')
+        session = identity.get('capture_session')
+        if session is not None:
+            if session != {'mode': 'endpoint', 'method': 'GET', 'path': '/__vaultline_docs/session'}:
+                raise ValueError('Unsupported synthetic capture session contract')
+            started = page.request.get(url + session['path'])
+            if not started.ok or started.json() != {'ok': True, 'test_account': 'docs-reviewer'}:
+                raise ValueError('Synthetic capture session could not start')
         for guide in guides:
             records = []
             page.goto(url + '/')
-            expect(page.get_by_role('button', name='Start synthetic session', exact=True)).to_be_visible()
-            page.get_by_role('button', name='Start synthetic session', exact=True).click()
+            if session is None:
+                expect(page.get_by_role('button', name='Start synthetic session', exact=True)).to_be_visible()
+                page.get_by_role('button', name='Start synthetic session', exact=True).click()
             for index, step in enumerate(guide['steps'], 1):
                 downloads = []
                 for action in step.get('actions', []):
@@ -48,6 +58,8 @@ def capture(url, manifest, revision, bindings, guides, output):
                         target.click()
                     elif operation == 'fill':
                         target.fill(action['value'])
+                    elif operation == 'press':
+                        target.press(action['key'])
                     elif operation == 'check':
                         target.check()
                     elif operation == 'download':
