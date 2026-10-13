@@ -16,6 +16,7 @@ from pathlib import Path
 import socket
 import subprocess
 import time
+import urllib.parse
 import urllib.request
 import zipfile
 
@@ -26,6 +27,10 @@ PINNED_PORTAL_REVISION = "ce77a0ce867e5229d9fdef9f94179cc048c2d3d3"
 GUIDE_ID = "search-collection"
 GUIDE_TITLE = "Search the archive and create a collection"
 OVERRIDE_MARKER = "ARCHIVE-DOCS-"
+PORTAL_FIXTURE_ORGANIZATION = "org_a"
+PORTAL_FIXTURE_SYSTEM = "sys_a"
+PORTAL_FIXTURE_NAME = "Synthetic Studio"
+PORTAL_FIXTURE_MODULES = ["core", "archive"]
 
 
 def sha256(value):
@@ -104,6 +109,7 @@ def verify_package(package, packet_path):
     manifest = json.loads((package / "deployments" / deployment_id / "deployment.json").read_text())
     if sha256(manifest) != packet["deployment"].get("manifestSha256"):
         raise RuntimeError("Portal packet manifest hash differs from the package")
+    verify_deployment_profile(packet["deployment"], manifest)
     packaged = package / "deployments" / deployment_id
     if OVERRIDE_MARKER not in (packaged / f"{GUIDE_ID}.md").read_text():
         raise RuntimeError("Generated deployment guide lost the ARCHIVE-DOCS override")
@@ -116,6 +122,65 @@ def verify_package(package, packet_path):
     if "GNU GENERAL PUBLIC LICENSE" not in packet["license"]["copying"]:
         raise RuntimeError("Portal packet is missing GPL-3.0 license text")
     return packet, image_hashes
+
+
+def verify_deployment_profile(deployment, manifest):
+    if (deployment.get("version") != manifest.get("version") or
+            deployment.get("modules") != manifest.get("modules") or
+            deployment.get("modules") != PORTAL_FIXTURE_MODULES):
+        raise RuntimeError("Portal packet version or module profile differs from the accepted deployment")
+
+
+def fixture_system_profile(packet):
+    if (packet.get("organizationId") != PORTAL_FIXTURE_ORGANIZATION or
+            packet.get("systemId") != PORTAL_FIXTURE_SYSTEM):
+        raise RuntimeError("Portal fixture setup is restricted to org_a/sys_a")
+    deployment = packet.get("deployment") or {}
+    version, modules = deployment.get("version"), deployment.get("modules")
+    if not isinstance(version, str) or not version or modules != PORTAL_FIXTURE_MODULES:
+        raise RuntimeError("Portal fixture setup requires the accepted Core version and module profile")
+    return {"version": version, "modules_json": modules}
+
+
+def require_loopback_origin(origin):
+    parsed = urllib.parse.urlsplit(origin)
+    identity = (parsed.scheme, parsed.hostname, parsed.path, parsed.query, parsed.fragment)
+    if identity != ("http", "127.0.0.1", "", "", "") or parsed.port is None:
+        raise RuntimeError("Portal fixture setup requires an explicit 127.0.0.1 HTTP origin")
+    return origin
+
+
+def loopback_json(origin, method, path, body=None):
+    require_loopback_origin(origin)
+    data = None if body is None else json.dumps(body).encode()
+    request = urllib.request.Request(origin + path, data=data, method=method,
+        headers={"content-type": "application/json", "prefer": "return=representation"})
+    with urllib.request.urlopen(request, timeout=2) as response:
+        raw = response.read()
+    return json.loads(raw) if raw else None
+
+
+def configure_fixture_system(origin, packet, transport=loopback_json):
+    require_loopback_origin(origin)
+    profile = fixture_system_profile(packet)
+    organization_path = "/rest/v1/organizations?id=eq.org_a"
+    system_path = "/rest/v1/systems?id=eq.sys_a&organization_id=eq.org_a"
+    organizations = transport(origin, "GET", organization_path)
+    systems = transport(origin, "GET", system_path)
+    if len(organizations or []) != 1 or organizations[0].get("id") != PORTAL_FIXTURE_ORGANIZATION or \
+            organizations[0].get("name") != PORTAL_FIXTURE_NAME:
+        raise RuntimeError("Portal mock does not expose the expected synthetic org_a fixture")
+    if len(systems or []) != 1 or systems[0].get("id") != PORTAL_FIXTURE_SYSTEM or \
+            systems[0].get("organization_id") != PORTAL_FIXTURE_ORGANIZATION or \
+            systems[0].get("name") != PORTAL_FIXTURE_NAME:
+        raise RuntimeError("Portal mock does not expose the expected synthetic sys_a fixture")
+    updated = transport(origin, "PATCH", system_path, profile)
+    if len(updated or []) != 1:
+        raise RuntimeError("Portal mock refused the exact synthetic system profile update")
+    readback = transport(origin, "GET", system_path)
+    if len(readback or []) != 1 or any(readback[0].get(key) != value for key, value in profile.items()):
+        raise RuntimeError("Portal mock system profile readback differs from the accepted packet")
+    return profile
 
 
 def free_port():
@@ -168,6 +233,7 @@ def run(args):
                               env=env, stdout=logs[0], stderr=subprocess.STDOUT)
         processes.append(db)
         ready(f"http://127.0.0.1:{dbport}/rest/v1/organizations", db)
+        configure_fixture_system(f"http://127.0.0.1:{dbport}", packet)
         app = subprocess.Popen(["node", "node_modules/next/dist/bin/next", "start", "--hostname",
                                 "127.0.0.1", "--port", str(port)], cwd=args.portal_runtime,
                                env=env, stdout=logs[1], stderr=subprocess.STDOUT)

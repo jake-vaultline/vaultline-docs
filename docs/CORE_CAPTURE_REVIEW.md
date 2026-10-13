@@ -176,22 +176,27 @@ After screenshot review, run the focused package-specific flow with fresh output
 
 ```bash
 ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt4
-PACKAGE="$ROOT/packages/PACKAGE_ID"
+PACKAGE="$ROOT/packages/98a373276de7-4e770c58db48"
 PACKET="$ROOT/core-1.0.158.portal.json"
 .venv/bin/python scripts/qualify_core_guide_portal.py \
   --portal-source /Users/jakehalperin/Developer/Vaultline/worktrees/client-portal/vlp-2189-docs-portal-source \
   --portal-runtime /Users/jakehalperin/Developer/Vaultline/worktrees/client-portal/vlp-1971-vaultline-docs \
   --portal-revision ce77a0ce867e5229d9fdef9f94179cc048c2d3d3 \
   --package "$PACKAGE" --packet "$PACKET" \
-  --output "$ROOT/portal-qualification"
+  --output "$ROOT/portal-qualification-attempt2"
 ```
 
 The script accepts only the actual one-guide packet and verifies package checksums, source/package/
 manifest identity, three PNG hashes, the preserved `ARCHIVE-DOCS-` note, and GPL notices before it
-starts the existing local Portal fixture. Its browser flow proves draft invisibility, administrator
+starts the existing local Portal fixture. Before the app starts, it uses that fixture's loopback REST
+surface to bind only synthetic `org_a` / `sys_a` to the packet's exact `1.0.158` and
+`core` / `archive` profile, then reads the profile back. Foreign identities, module profiles and
+non-loopback fixture origins fail closed. Its browser flow proves draft invisibility, administrator
 review, local synthetic publication, client rendering, private image bytes, a one-guide/three-image
 ZIP, cross-client revision/image/download denial, and withdrawal. It never targets a hosted Portal.
-This flow has not run; the distinct reviewer must accept this exact source first. The existing hosted
+The first Portal attempt was retained at `portal-qualification/` after the unchanged fixture profile
+correctly caused the production compatibility guard to refuse the package. The retry must use the
+new output above only after the distinct reviewer accepts this exact source. The existing hosted
 migration, production deployment and authenticated readback are already qualified and are not repeated.
 
 Stop the owned Core process, confirm its PID and listener are gone, retain `control/stopped.json`,
