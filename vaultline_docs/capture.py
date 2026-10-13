@@ -14,6 +14,48 @@ def origin(url):
     return url.rstrip('/')
 
 
+def live_core_evidence(page, url):
+    """Refuse a screenshot unless the rendered UI is backed by the live Core APIs."""
+    me = page.request.get(url + '/api/me')
+    bootstrap = page.request.get(url + '/api/bootstrap/v2')
+    if not me.ok or me.json().get('authenticated') is not True:
+        raise ValueError('Synthetic Core session is not authenticated')
+    if not bootstrap.ok:
+        raise ValueError('Live Core bootstrap is unavailable; static demo fallback refused')
+    assets = bootstrap.json().get('assets', [])
+    if not any(asset.get('id') == 'docs-ridge-sunrise' for asset in assets):
+        raise ValueError('Live Core bootstrap does not contain the seeded synthetic asset')
+    ui_live = page.evaluate("() => typeof API !== 'undefined' && API.live === true")
+    if ui_live is not True:
+        raise ValueError('Rendered Core UI is not in live mode; static demo fallback refused')
+    return {'authenticated': True, 'asset_id': 'docs-ridge-sunrise', 'ui_mode': 'live-core'}
+
+
+def persistence_evidence(page, url, contract, step):
+    response = page.request.get(url + contract['path'])
+    if not response.ok:
+        raise ValueError('Synthetic Core persistence proof is unavailable')
+    proof = response.json()
+    if proof.get('ui_mode') != 'live-core':
+        raise ValueError('Synthetic Core persistence proof did not come from live Core')
+    if step < contract['after_step']:
+        return proof
+    expected = {
+        'name': contract['collection'],
+        'note': 'Synthetic documentation review only',
+        'member_ids': [contract['asset_id']],
+        'member_count': 1,
+    }
+    if proof.get('collection') != expected:
+        raise ValueError('Saved Core collection does not contain the exact synthetic member')
+    asset = proof.get('asset', {})
+    if (asset.get('id') != contract['asset_id'] or
+            asset.get('source_path_sha256') != contract['source_path_sha256'] or
+            asset.get('source_path_unchanged') is not True):
+        raise ValueError('Synthetic asset source locator changed during collection creation')
+    return proof
+
+
 def capture(url, manifest, revision, bindings, guides, output):
     url = origin(url)
     if manifest.get('synthetic') is not True:
@@ -34,7 +76,8 @@ def capture(url, manifest, revision, bindings, guides, output):
                              'modules': manifest['modules'], 'platform': manifest['platform'],
                              'config_sha256': digest(manifest.get('config', {})),
                              'contracts': bindings, 'synthetic': True, 'test_account': 'docs-reviewer'}
-        if {key: value for key, value in identity.items() if key != 'capture_session'} != expected_identity:
+        if {key: value for key, value in identity.items()
+                if key not in {'capture_session', 'capture_proof'}} != expected_identity:
             raise ValueError('Test deployment identity does not match source/manifest')
         session = identity.get('capture_session')
         if session is not None:
@@ -43,6 +86,12 @@ def capture(url, manifest, revision, bindings, guides, output):
             started = page.request.get(url + session['path'])
             if not started.ok or started.json() != {'ok': True, 'test_account': 'docs-reviewer'}:
                 raise ValueError('Synthetic capture session could not start')
+        proof_contract = identity.get('capture_proof')
+        if proof_contract != {'method': 'GET', 'path': '/__vaultline_docs/proof', 'after_step': 2,
+                              'collection': 'ARCHIVE-DOCS-SELECTS',
+                              'asset_id': 'docs-ridge-sunrise',
+                              'source_path_sha256': digest(b'/synthetic/docs/Ridge Sunrise.mp4')}:
+            raise ValueError('Unsupported synthetic persistence proof contract')
         for guide in guides:
             records = []
             page.goto(url + '/')
@@ -86,6 +135,10 @@ def capture(url, manifest, revision, bindings, guides, output):
                         expect(target).to_be_visible()
                 text = page.locator('body').inner_text()
                 check_text(text)
+                if '(demo)' in text.lower():
+                    raise ValueError('Rendered Core UI entered static demo fallback')
+                live_evidence = live_core_evidence(page, url)
+                persisted = persistence_evidence(page, url, proof_contract, index)
                 # Credentials and unreviewed form content must never enter a screenshot.
                 if page.locator('input[type=password]').count():
                     raise ValueError('Credential field found in screenshot')
@@ -95,6 +148,8 @@ def capture(url, manifest, revision, bindings, guides, output):
                 page.screenshot(path=str(output / name), animations='disabled', full_page=True)
                 records.append({'step': index, 'file': name, 'sha256': digest((output / name).read_bytes()),
                                 'assertions': assertions, 'downloads': downloads, 'page_text_sha256': digest(text.encode())})
+                records[-1]['live_core'] = live_evidence
+                records[-1]['persistence'] = persisted
             results[guide['id']] = records
         context.close()
         browser.close()

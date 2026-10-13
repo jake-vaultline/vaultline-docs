@@ -8,7 +8,6 @@ database with synthetic media. It never installs Core or writes to an installed/
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -18,6 +17,7 @@ import signal
 import subprocess
 import sys
 import threading
+import tempfile
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 if str(REPOSITORY_ROOT) not in sys.path:
@@ -28,20 +28,17 @@ EXPECTED_CORE_REVISION = "98a373276de75fcf9510dfb02ffb89778b8ea324"
 EXPECTED_CORE_VERSION = "1.0.158"
 TEST_ACCOUNT = "docs-reviewer"
 MAX_ROOT_BYTES = 2 * 1024 * 1024 * 1024
+ASSET_ID = "docs-ridge-sunrise"
+ASSET_SOURCE_PATH = "/synthetic/docs/Ridge Sunrise.mp4"
+COLLECTION_NAME = "ARCHIVE-DOCS-SELECTS"
+COLLECTION_NOTE = "Synthetic documentation review only"
 
 
 class HarnessError(RuntimeError):
     pass
 
 
-def canonical(value):
-    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
-
-
-def digest(value):
-    if not isinstance(value, bytes):
-        value = canonical(value)
-    return hashlib.sha256(value).hexdigest()
+from vaultline_docs.source import digest
 
 
 def read_json(path):
@@ -92,13 +89,106 @@ def validate_inputs(core, revision, recipes_path, manifest_path, root):
     return core, root, recipes, manifest
 
 
-def plan(core, revision, recipes_path, manifest_path, root):
+def manifest_config_from_effective(config):
+    """Project the tested Core config into the stable Docs deployment contract."""
+    return {
+        # These stable aliases are the existing Docs eligibility interface.
+        "collections": config["features"]["collections"],
+        "remoteTransfer": config["features"]["remoteTransfer"],
+        "coreEffective": {
+            "product": {
+                "generated": config["product"]["generated"],
+                "coreVersion": config["product"]["coreVersion"],
+                "environment": config["product"]["environment"],
+                "modules": config["product"]["modules"],
+            },
+            "client": {"deployment": config["client"]["deployment"]},
+            "features": {
+                key: config["features"][key]
+                for key in (
+                    "collections", "publicRead", "relay", "photo", "review", "post", "brand",
+                    "tagging", "transcription", "nlSearch", "advancedSearch", "remoteTransfer",
+                    "fileTransfers",
+                )
+            },
+            "storage": {"autoIndex": config["storage"]["autoIndex"], "roots": config["storage"]["roots"]},
+        },
+    }
+
+
+def runtime_environment(root, config_path, inherited=None):
+    """Return a closed environment without inspecting or copying credential values."""
+    inherited = os.environ if inherited is None else inherited
+    env = {}
+    for name in ("PATH", "LANG", "LC_ALL", "TZ", "SYSTEMROOT"):
+        if name in inherited:
+            env[name] = inherited[name]
+    env.update({
+        "HOME": str(root / "home"),
+        "TMPDIR": str(root / "tmp"),
+        "VAULTLINE_CONFIG_PATH": str(config_path),
+        "VAULTLINE_DATABASE_HOME": str(root / "database"),
+        "VAULTLINE_DERIVATIVE_HOME": str(root / "derivatives"),
+        "VAULTLINE_NODE_ID": "docs-node",
+        "VAULTLINE_MEDIA_ORIGINALS_CONFIGURED": "false",
+        "VAULTLINE_NONINTERACTIVE": "1",
+        "VAULTLINE_SKIP_OLLAMA": "1",
+        "PYTHONPYCACHEPREFIX": str(root / "cache"),
+        "PYTHONDONTWRITEBYTECODE": "1",
+    })
+    return env
+
+
+def load_effective_config(core, root, config_path, inherited=None):
+    """Import only pinned Core's config module in a closed synthetic subprocess."""
+    script = (
+        "import json,sys;sys.path.insert(0,sys.argv[1]);"
+        "import vaultline_config as c;"
+        "print(json.dumps(c.CONFIG,sort_keys=True))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(core)],
+        cwd=core,
+        env=runtime_environment(root, config_path, inherited),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode:
+        raise HarnessError("pinned Core rejected the synthetic runtime configuration")
+    try:
+        return json.loads(result.stdout.strip().splitlines()[-1])
+    except (IndexError, json.JSONDecodeError) as error:
+        raise HarnessError("pinned Core did not return an effective configuration") from error
+
+
+def validate_effective_identity(effective, manifest):
+    projected = manifest_config_from_effective(effective)
+    if projected != manifest.get("config"):
+        raise HarnessError("deployment manifest config differs from pinned Core effective configuration")
+    if effective["product"]["coreVersion"] != manifest["version"]:
+        raise HarnessError("effective Core version differs from deployment manifest")
+    if effective["product"]["modules"] != manifest["modules"]:
+        raise HarnessError("effective Core modules differ from deployment manifest")
+    return projected
+
+
+def plan(core, revision, recipes_path, manifest_path, root, *, check_effective=True):
     core, root, recipes, manifest = validate_inputs(
         core, revision, recipes_path, manifest_path, root)
     from vaultline_docs.source import Source, load_guides
     guides, blocked, bindings = load_guides(Source(core, revision), recipes)
     if blocked or [item["id"] for item in guides] != ["search-collection"]:
         raise HarnessError("Core source does not satisfy the frozen guide evidence: " + json.dumps(blocked))
+    if check_effective:
+        with tempfile.TemporaryDirectory(prefix="vaultline-docs-config-") as temp:
+            config_root = Path(temp)
+            for name in ("database", "derivatives", "home", "tmp", "cache"):
+                (config_root / name).mkdir(mode=0o700)
+            config_path = config_root / "runtime-config.json"
+            write_private(config_path, runtime_config(config_root))
+            effective = load_effective_config(core, config_root, config_path)
+            validate_effective_identity(effective, manifest)
     return {
         "source_revision": revision,
         "version": manifest["version"],
@@ -110,6 +200,10 @@ def plan(core, revision, recipes_path, manifest_path, root):
         "test_account": TEST_ACCOUNT,
         "capture_session": {"mode": "endpoint", "method": "GET",
                             "path": "/__vaultline_docs/session"},
+        "capture_proof": {"method": "GET", "path": "/__vaultline_docs/proof",
+                          "after_step": 2, "collection": COLLECTION_NAME,
+                          "asset_id": ASSET_ID,
+                          "source_path_sha256": digest(ASSET_SOURCE_PATH.encode())},
         "guide_ids": ["search-collection"],
         "core_root": str(core),
         "private_root": str(root),
@@ -123,17 +217,19 @@ def plan(core, revision, recipes_path, manifest_path, root):
 
 def runtime_config(root):
     return {
-        "product": {"name": "Media Nexus", "version": EXPECTED_CORE_VERSION,
-                    "profileId": "vaultline-docs-core-1-0-158"},
-        "modules": ["core", "archive"],
+        "product": {"generated": False, "profileId": "vaultline-docs-core-1-0-158",
+                    "profileSchemaVersion": "synthetic-test-only", "coreVersion": EXPECTED_CORE_VERSION,
+                    "profileHash": "", "environment": "development",
+                    "modules": ["core", "archive"], "capabilities": []},
+        "client": {"name": "Vaultline Docs Synthetic", "tagline": "Synthetic documentation review",
+                   "deployment": "Uninstalled source test"},
+        "branding": {"badge": "Docs Synthetic"},
         "features": {"collections": True, "publicRead": False, "relay": False,
                      "photo": False, "review": False, "post": False, "brand": False,
                      "tagging": False, "transcription": False, "nlSearch": False,
                      "advancedSearch": True, "remoteTransfer": False, "fileTransfers": False},
         "storage": {"autoIndex": False, "databaseHome": str(root / "database"),
                     "derivativeHome": str(root / "derivatives"), "roots": []},
-        "topology": {"mode": "combined", "nodes": [{"id": "docs-node",
-                    "roles": ["server", "source", "derivative", "worker"]}]},
     }
 
 
@@ -144,23 +240,23 @@ def write_private(path, value):
 
 
 def serve(args):
-    identity = plan(args.core_root, args.revision, args.recipes, args.manifest, args.root)
+    identity = plan(args.core_root, args.revision, args.recipes, args.manifest, args.root,
+                    check_effective=False)
     root = Path(identity["private_root"])
     root.mkdir(parents=True, mode=0o700)
     os.chmod(root, 0o700)
-    for name in ("database", "derivatives", "media", "control", "cache", "images"):
+    for name in ("database", "derivatives", "media", "control", "cache", "images", "home", "tmp"):
         (root / name).mkdir(mode=0o700)
     config_path = root / "control/runtime-config.json"
     write_private(config_path, runtime_config(root))
-    os.environ.update({
-        "VAULTLINE_CONFIG_PATH": str(config_path),
-        "VAULTLINE_DATABASE_HOME": str(root / "database"),
-        "VAULTLINE_DERIVATIVE_HOME": str(root / "derivatives"),
-        "PYTHONPYCACHEPREFIX": str(root / "cache"),
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "VAULTLINE_NODE_ID": "docs-node",
-    })
+    closed_env = runtime_environment(root, config_path)
+    os.environ.clear()
+    os.environ.update(closed_env)
     sys.path.insert(0, identity["core_root"])
+    import vaultline_config as core_config
+    manifest = read_json(args.manifest)
+    effective_projection = validate_effective_identity(core_config.CONFIG, manifest)
+    identity["config_sha256"] = digest(effective_projection)
     import vaultline_db as db
     import vaultline_server as server
 
@@ -174,9 +270,9 @@ def serve(args):
                               "kind": "Test", "mount": "/synthetic/docs", "online": 1})
         media = root / "media/Ridge Sunrise.mp4"
         media.write_bytes(b"Vaultline Docs synthetic media; no client content.\n")
-        db.upsert_asset(con, {"id": "docs-ridge-sunrise", "name": media.name,
+        db.upsert_asset(con, {"id": ASSET_ID, "name": media.name,
             "volume_id": "docs-volume", "folder": "Ridge/Selects",
-            "path": "/synthetic/docs/Ridge Sunrise.mp4",
+            "path": ASSET_SOURCE_PATH,
             "ext": "mp4", "media_type": "video", "classification": "Camera Original",
             "size_bytes": media.stat().st_size, "duration_sec": 12, "indexed_at": db.now(),
             "availability": "online", "proxy_status": "None", "transcript_status": "None"})
@@ -209,6 +305,36 @@ def serve(args):
         response = jsonify({"ok": True, "test_account": TEST_ACCOUNT})
         response.set_cookie(server.COOKIE, token, httponly=True, samesite="Lax", path="/")
         return response
+
+    @server.app.get("/__vaultline_docs/proof")
+    def vaultline_docs_proof():
+        from flask import jsonify, request
+        if request.remote_addr not in {"127.0.0.1", "::1"}:
+            return jsonify({"error": "loopback only"}), 403
+        con = db.connect()
+        try:
+            asset = con.execute("SELECT id,path FROM assets WHERE id=?", (ASSET_ID,)).fetchone()
+            collection = con.execute(
+                "SELECT id,name,note FROM collections WHERE name=? ORDER BY created_at DESC LIMIT 1",
+                (COLLECTION_NAME,),
+            ).fetchone()
+            members = [] if not collection else [row["asset_id"] for row in con.execute(
+                "SELECT asset_id FROM collection_assets WHERE collection_id=? ORDER BY position,rowid",
+                (collection["id"],),
+            ).fetchall()]
+        finally:
+            con.close()
+        source_path = asset["path"] if asset else ""
+        return jsonify({
+            "ui_mode": "live-core",
+            "collection": None if not collection else {
+                "name": collection["name"], "note": collection["note"],
+                "member_ids": members, "member_count": len(members),
+            },
+            "asset": {"id": asset["id"] if asset else None,
+                      "source_path_sha256": digest(source_path.encode()),
+                      "source_path_unchanged": source_path == ASSET_SOURCE_PATH},
+        })
 
     from werkzeug.serving import make_server
     httpd = make_server("127.0.0.1", 0, server.app, threaded=True)

@@ -1,9 +1,11 @@
 import importlib.util
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+from vaultline_docs import capture as capture_module
 from vaultline_docs.source import Source, load_guides
 
 
@@ -14,6 +16,27 @@ SPEC.loader.exec_module(HARNESS)
 
 
 class CoreCaptureHarnessTests(unittest.TestCase):
+    class Response:
+        ok = True
+
+        def __init__(self, value):
+            self.value = value
+
+        def json(self):
+            return self.value
+
+    class Page:
+        def __init__(self, responses, live=True):
+            self.responses = responses
+            self.request = self
+            self.live = live
+
+        def get(self, url):
+            return CoreCaptureHarnessTests.Response(self.responses[url.rsplit('/', 1)[-1]])
+
+        def evaluate(self, _script):
+            return self.live
+
     def test_inline_guide_binding_covers_runtime_actions(self):
         import subprocess
         with tempfile.TemporaryDirectory() as temp:
@@ -47,7 +70,8 @@ class CoreCaptureHarnessTests(unittest.TestCase):
             with mock.patch.object(HARNESS, "git", side_effect=[HARNESS.EXPECTED_CORE_REVISION, ""]), \
                  mock.patch("vaultline_docs.source.Source"), \
                  mock.patch("vaultline_docs.source.load_guides", return_value=([{"id": "search-collection"}], [], bindings)):
-                plan = HARNESS.plan(core, HARNESS.EXPECTED_CORE_REVISION, recipes, manifest, runtime)
+                plan = HARNESS.plan(core, HARNESS.EXPECTED_CORE_REVISION, recipes, manifest, runtime,
+                                    check_effective=False)
             self.assertEqual(plan["guide_ids"], ["search-collection"])
             self.assertEqual(plan["port"], 0)
             self.assertEqual(plan["headless_jobs"], 1)
@@ -55,6 +79,83 @@ class CoreCaptureHarnessTests(unittest.TestCase):
             self.assertEqual(plan["process_plan"], 32)
             self.assertEqual(plan["capture_session"]["path"], "/__vaultline_docs/session")
             self.assertEqual(plan["capture_session"]["method"], "GET")
+            self.assertEqual(plan["capture_proof"]["asset_id"], HARNESS.ASSET_ID)
+
+    def test_shared_digest_matches_capture_contract(self):
+        from vaultline_docs.source import digest
+        manifest = json.loads((ROOT / "examples/deployments/core-1.0.158-docs.json").read_text())
+        self.assertEqual(HARNESS.digest(manifest["config"]), digest(manifest["config"]))
+
+    def test_live_core_proof_refuses_static_demo_mode(self):
+        page = self.Page({"me": {"authenticated": True},
+                          "v2": {"assets": [{"id": HARNESS.ASSET_ID}]}}, live=False)
+        with self.assertRaisesRegex(ValueError, "static demo fallback refused"):
+            capture_module.live_core_evidence(page, "http://127.0.0.1:1234")
+
+    def test_persistence_proof_requires_member_and_unchanged_source(self):
+        contract = {"path": "/__vaultline_docs/proof", "after_step": 2,
+                    "collection": HARNESS.COLLECTION_NAME, "asset_id": HARNESS.ASSET_ID,
+                    "source_path_sha256": HARNESS.digest(HARNESS.ASSET_SOURCE_PATH.encode())}
+        proof = {"ui_mode": "live-core", "collection": {
+            "name": HARNESS.COLLECTION_NAME, "note": HARNESS.COLLECTION_NOTE,
+            "member_ids": [HARNESS.ASSET_ID], "member_count": 1},
+            "asset": {"id": HARNESS.ASSET_ID,
+                      "source_path_sha256": contract["source_path_sha256"],
+                      "source_path_unchanged": True}}
+        page = self.Page({"proof": proof})
+        self.assertEqual(capture_module.persistence_evidence(
+            page, "http://127.0.0.1:1234", contract, 3), proof)
+        proof["collection"]["member_ids"] = []
+        with self.assertRaisesRegex(ValueError, "exact synthetic member"):
+            capture_module.persistence_evidence(page, "http://127.0.0.1:1234", contract, 3)
+
+    def test_closed_environment_drops_hostile_deployment_provider_and_secret_paths(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            inherited = {
+                "PATH": "/usr/bin:/bin",
+                "VAULTLINE_ACCESS_URL_STATE": "/client/access.json",
+                "VAULTLINE_ARCHIVE_SITE_OVERLAY_PATH": "/client/site.json",
+                "VAULTLINE_DEPLOYMENT_CONFIG_PATH": "/client/deployment.json",
+                "VAULTLINE_SIGNED_RUNTIME_CONFIG_PATH": "/client/signed.json",
+                "VAULTLINE_SECRETS_PATH": "/client/secrets.env",
+                "VAULTLINE_R2_SECRET_ACCESS_KEY": "must-not-be-read-or-copied",
+                "OPENAI_API_KEY": "must-not-be-read-or-copied",
+            }
+            env = HARNESS.runtime_environment(root, root / "runtime.json", inherited)
+            self.assertEqual(env["HOME"], str(root / "home"))
+            self.assertEqual(env["VAULTLINE_CONFIG_PATH"], str(root / "runtime.json"))
+            for name in inherited:
+                if name != "PATH":
+                    self.assertNotIn(name, env)
+
+    def test_pinned_core_accepts_config_and_matches_effective_manifest_identity(self):
+        core = Path(os.environ.get(
+            "VAULTLINE_DOCS_CORE_ROOT",
+            "/Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source",
+        ))
+        if not core.is_dir():
+            self.skipTest("exact pinned Core source view unavailable")
+        self.assertEqual(HARNESS.git(core, "rev-parse", "HEAD"), HARNESS.EXPECTED_CORE_REVISION)
+        self.assertEqual(HARNESS.git(core, "status", "--porcelain"), "")
+        manifest = json.loads((ROOT / "examples/deployments/core-1.0.158-docs.json").read_text())
+        with tempfile.TemporaryDirectory() as temp:
+            private = Path(temp)
+            for name in ("database", "derivatives", "home", "tmp", "cache"):
+                (private / name).mkdir()
+            config_path = private / "runtime.json"
+            HARNESS.write_private(config_path, HARNESS.runtime_config(private))
+            effective = HARNESS.load_effective_config(core, private, config_path, {
+                "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+                "VAULTLINE_ACCESS_URL_STATE": "/forbidden/access.json",
+                "VAULTLINE_ARCHIVE_SITE_OVERLAY_PATH": "/forbidden/site.json",
+                "VAULTLINE_DEPLOYMENT_CONFIG_PATH": "/forbidden/deployment.json",
+                "VAULTLINE_SIGNED_RUNTIME_CONFIG_PATH": "/forbidden/signed.json",
+                "VAULTLINE_R2_SECRET_ACCESS_KEY": "forbidden",
+            })
+            projected = HARNESS.validate_effective_identity(effective, manifest)
+        self.assertEqual(projected, manifest["config"])
+        self.assertNotIn("canonicalOrigin", projected)
 
     def test_rejects_dirty_or_wrong_core(self):
         with tempfile.TemporaryDirectory(dir=Path.home()) as temp:

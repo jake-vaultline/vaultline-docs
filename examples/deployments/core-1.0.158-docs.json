@@ -9,7 +9,36 @@
   "config": {
     "collections": true,
     "remoteTransfer": false,
-    "canEdit": true
+    "coreEffective": {
+      "product": {
+        "generated": false,
+        "coreVersion": "1.0.158",
+        "environment": "development",
+        "modules": ["core", "archive"]
+      },
+      "client": {
+        "deployment": "Uninstalled source test"
+      },
+      "features": {
+        "collections": true,
+        "publicRead": false,
+        "relay": false,
+        "photo": false,
+        "review": false,
+        "post": false,
+        "brand": false,
+        "tagging": false,
+        "transcription": false,
+        "nlSearch": false,
+        "advancedSearch": true,
+        "remoteTransfer": false,
+        "fileTransfers": false
+      },
+      "storage": {
+        "autoIndex": false,
+        "roots": []
+      }
+    }
   },
   "overrides": {
     "search-collection": {

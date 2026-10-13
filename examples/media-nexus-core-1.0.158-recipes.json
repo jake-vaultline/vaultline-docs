@@ -47,7 +47,7 @@
             {"op": "click", "selector": "button:has-text('Create and add')"}
           ],
           "assertions": [
-            {"selector": "body", "text": "Collection created"}
+            {"selector": ".toast", "text": "Collection created"}
           ]
         },
         {
@@ -59,8 +59,8 @@
             {"op": "click", "selector": "text=ARCHIVE-DOCS-SELECTS"}
           ],
           "assertions": [
-            {"selector": "body", "text": "Ridge Sunrise.mp4"},
-            {"selector": "body", "text": "Synthetic documentation review only"}
+            {"selector": ".archive-workspace .crumb", "text": "ARCHIVE-DOCS-SELECTS"},
+            {"selector": "#asset-card-docs-ridge-sunrise", "text": "Ridge Sunrise.mp4"}
           ]
         }
       ],
