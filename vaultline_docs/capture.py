@@ -27,9 +27,15 @@ def live_core_evidence(page, url):
         raise ValueError('Synthetic Core session is not authenticated')
     if not bootstrap.ok:
         raise ValueError('Live Core bootstrap is unavailable; static demo fallback refused')
-    assets = bootstrap.json().get('assets', [])
-    if not any(asset.get('id') == 'docs-ridge-sunrise' for asset in assets):
-        raise ValueError('Live Core bootstrap does not contain the seeded synthetic asset')
+    catalog = page.request.get(url + '/api/assets/v3?limit=10')
+    if not catalog.ok:
+        raise ValueError('Live Core catalog is unavailable; static demo fallback refused')
+    catalog_payload = catalog.json()
+    items = catalog_payload.get('items') if isinstance(catalog_payload, dict) else None
+    if not isinstance(items, list) or not any(
+            isinstance(asset, dict) and asset.get('id') == 'docs-ridge-sunrise'
+            for asset in items):
+        raise ValueError('Live Core catalog does not contain the seeded synthetic asset')
     ui_live = page.evaluate("() => typeof API !== 'undefined' && API.live === true")
     if ui_live is not True:
         raise ValueError('Rendered Core UI is not in live mode; static demo fallback refused')

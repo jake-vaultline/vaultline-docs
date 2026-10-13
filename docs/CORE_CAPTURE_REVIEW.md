@@ -44,7 +44,7 @@ create the runtime root.
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
   --recipes examples/media-nexus-core-1.0.158-recipes.json \
   --manifest examples/deployments/core-1.0.158-docs.json \
-  --root /Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-review
+  --root /Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2
 ```
 
 The reported 2 GiB root growth, 2 GiB RSS and 32 processes are planning envelopes for entry and
@@ -75,8 +75,12 @@ SIGTERM or SIGINT. The random test password remains in process memory; the dispo
 only the `docs-reviewer` test account and synthetic media. No client or installed Media Nexus state
 is read.
 
+The failed first-attempt root at
+`/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-review` remains preserved with its
+logs and failure evidence. Attempt two uses the separate unused root below.
+
 ```bash
-ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-review
+ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2
 /usr/bin/python3 -B scripts/core_capture_harness.py serve \
   --core-root /Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source \
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
@@ -88,8 +92,8 @@ ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-review
 In a second private terminal, after checking `ready.json` and retaining its exact URL:
 
 ```bash
-ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-review
-CORE_URL="$(python3 -c 'import json; print(json.load(open("/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-review/control/ready.json"))["url"])')"
+ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2
+CORE_URL="$(python3 -c 'import json; print(json.load(open("/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2/control/ready.json"))["url"])')"
 .venv/bin/python -m vaultline_docs generate \
   --repo /Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source \
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
@@ -101,8 +105,9 @@ CORE_URL="$(python3 -c 'import json; print(json.load(open("/Users/jakehalperin/D
 
 The expected browser journey searches for `Ridge Sunrise.mp4`, selects that real Core result,
 creates `ARCHIVE-DOCS-SELECTS`, and opens that collection. Each screenshot is retained only after
-the live `/api/me` and `/api/bootstrap/v2` responses prove an authenticated Core UI and `API.live`
-is true. Any `(demo)` result is refused. From step two onward, the loopback proof route reads Core's
+authenticated `/api/me`, healthy summary-only `/api/bootstrap/v2`, and bounded live
+`/api/assets/v3?limit=10` response prove the seeded asset is served by Core and `API.live` is true.
+Any `(demo)` result is refused. From step two onward, the loopback proof route reads Core's
 persisted `collections`, `collection_assets`, and `assets` rows and requires the exact member ID,
 note, one-member count, and unchanged source-locator digest. The final UI assertion is scoped to the
 opened collection breadcrumb and `#asset-card-docs-ridge-sunrise`. Missing proof, selector, identity,
@@ -132,7 +137,7 @@ lock mismatch, missing build files, or a build older than its tracked runtime in
 After screenshot review, run the focused package-specific flow with fresh output:
 
 ```bash
-ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-review
+ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-capture-attempt2
 PACKAGE="$ROOT/packages/PACKAGE_ID"
 PACKET="$ROOT/core-1.0.158.portal.json"
 .venv/bin/python scripts/qualify_core_guide_portal.py \

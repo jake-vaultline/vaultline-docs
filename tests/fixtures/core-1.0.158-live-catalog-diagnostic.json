@@ -1,0 +1,88 @@
+{
+  "at": "2026-10-13T14:21:14.940895+00:00",
+  "disposition": "READ_ONLY_LIVE_RESPONSE_DIAGNOSTIC_AFTER_CAPTURE_FAILURE",
+  "responses": {
+    "/api/me": {
+      "status": 200,
+      "keys": [
+        "activeSupport",
+        "archivePermissions",
+        "authenticated",
+        "baseRole",
+        "displayName",
+        "id",
+        "initials",
+        "passwordPolicy",
+        "personId",
+        "role",
+        "supportAccess",
+        "username"
+      ],
+      "asset_ids": []
+    },
+    "/api/bootstrap/v2": {
+      "status": 200,
+      "keys": [
+        "archiveContextForm",
+        "archivePreview",
+        "archiveSummary",
+        "assetCount",
+        "branding",
+        "capabilities",
+        "catalogSummary",
+        "changeCursor",
+        "client",
+        "clientModel",
+        "collections",
+        "counts",
+        "deliveries",
+        "features",
+        "finalRules",
+        "folderContexts",
+        "generatedAt",
+        "jobs",
+        "product",
+        "projectRules",
+        "queueSummary",
+        "relaySummary",
+        "rules",
+        "schemaVersion",
+        "spectator",
+        "vocab",
+        "volumes"
+      ],
+      "asset_ids": []
+    },
+    "/api/assets/v3?limit=10": {
+      "status": 200,
+      "keys": [
+        "items",
+        "limit",
+        "nextCursor",
+        "total"
+      ],
+      "asset_ids": [
+        "docs-ridge-sunrise"
+      ]
+    },
+    "/__vaultline_docs/proof": {
+      "status": 200,
+      "keys": [
+        "asset",
+        "collection",
+        "ui_mode"
+      ],
+      "asset_ids": [],
+      "proof": {
+        "asset": {
+          "id": "docs-ridge-sunrise",
+          "source_path_sha256": "5931da49bb3534bbfa560558631145d0d7253a7221900103ef17eef9ff273259",
+          "source_path_unchanged": true
+        },
+        "collection": null,
+        "ui_mode": "live-core"
+      }
+    }
+  },
+  "cookies": "Not recorded; synthetic session only"
+}

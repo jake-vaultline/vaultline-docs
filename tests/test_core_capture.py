@@ -18,10 +18,9 @@ SPEC.loader.exec_module(HARNESS)
 
 class CoreCaptureHarnessTests(unittest.TestCase):
     class Response:
-        ok = True
-
-        def __init__(self, value):
+        def __init__(self, value, ok=True):
             self.value = value
+            self.ok = ok
 
         def json(self):
             return self.value
@@ -33,7 +32,10 @@ class CoreCaptureHarnessTests(unittest.TestCase):
             self.live = live
 
         def get(self, url):
-            return CoreCaptureHarnessTests.Response(self.responses[url.rsplit('/', 1)[-1]])
+            value = self.responses[url.rsplit('/', 1)[-1]]
+            if isinstance(value, tuple):
+                return CoreCaptureHarnessTests.Response(value[1], ok=value[0])
+            return CoreCaptureHarnessTests.Response(value)
 
         def evaluate(self, _script):
             return self.live
@@ -90,9 +92,40 @@ class CoreCaptureHarnessTests(unittest.TestCase):
 
     def test_live_core_proof_refuses_static_demo_mode(self):
         page = self.Page({"me": {"authenticated": True},
-                          "v2": {"assets": [{"id": HARNESS.ASSET_ID}]}}, live=False)
+                          "v2": {"assetCount": 1, "catalogSummary": {}},
+                          "v3?limit=10": {"items": [{"id": HARNESS.ASSET_ID}]}}, live=False)
         with self.assertRaisesRegex(ValueError, "static demo fallback refused"):
             capture_module.live_core_evidence(page, "http://127.0.0.1:1234")
+
+    def test_live_core_uses_actual_summary_and_catalog_contract(self):
+        diagnostic = json.loads((ROOT / "tests/fixtures/core-1.0.158-live-catalog-diagnostic.json").read_text())
+        responses = diagnostic["responses"]
+        self.assertEqual(responses["/api/bootstrap/v2"]["status"], 200)
+        self.assertNotIn("assets", responses["/api/bootstrap/v2"]["keys"])
+        self.assertEqual(responses["/api/assets/v3?limit=10"]["asset_ids"], [HARNESS.ASSET_ID])
+        core = Path("/Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source")
+        self.assertEqual(HARNESS.git(core, "rev-parse", "HEAD"), HARNESS.EXPECTED_CORE_REVISION)
+        source = (core / "vaultline_server.py").read_text()
+        self.assertIn('@app.route("/api/bootstrap/v2")', source)
+        self.assertIn('@app.route("/api/assets/v3")', source)
+        page = self.Page({"me": {"authenticated": True},
+                          "v2": {"assetCount": 1, "catalogSummary": {}},
+                          "v3?limit=10": {"items": [{"id": HARNESS.ASSET_ID}],
+                                           "limit": 10, "nextCursor": None, "total": 1}})
+        self.assertEqual(capture_module.live_core_evidence(
+            page, "http://127.0.0.1:1234")["asset_id"], HARNESS.ASSET_ID)
+
+    def test_live_core_catalog_missing_or_unhealthy_fails_closed(self):
+        base = {"me": {"authenticated": True},
+                "v2": {"assetCount": 1, "catalogSummary": {}}}
+        with self.assertRaisesRegex(ValueError, "catalog does not contain"):
+            capture_module.live_core_evidence(
+                self.Page({**base, "v3?limit=10": {"items": []}}),
+                "http://127.0.0.1:1234")
+        with self.assertRaisesRegex(ValueError, "catalog is unavailable"):
+            capture_module.live_core_evidence(
+                self.Page({**base, "v3?limit=10": (False, {"error": "unavailable"})}),
+                "http://127.0.0.1:1234")
 
     def test_generic_fixture_mode_performs_no_core_live_checks(self):
         identity = {"synthetic": True, "test_account": "docs-reviewer"}
@@ -120,7 +153,8 @@ class CoreCaptureHarnessTests(unittest.TestCase):
 
     def test_core_step_evidence_refuses_live_proof_failure(self):
         page = self.Page({"me": {"authenticated": True},
-                          "v2": {"assets": [{"id": HARNESS.ASSET_ID}]}}, live=False)
+                          "v2": {"assetCount": 1, "catalogSummary": {}},
+                          "v3?limit=10": {"items": [{"id": HARNESS.ASSET_ID}]}}, live=False)
         with self.assertRaisesRegex(ValueError, "static demo fallback refused"):
             capture_module.capture_step_evidence(
                 page, "http://127.0.0.1:1234", {"path": "/__vaultline_docs/proof"},
