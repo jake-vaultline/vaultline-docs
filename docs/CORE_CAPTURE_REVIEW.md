@@ -25,7 +25,8 @@ effective projection and manifest. The deployment remains an uninstalled synthet
 keeps the shared guide and override separate. The package continues to include `LICENSE`, `COPYING`,
 `NOTICE`, source metadata and checksums.
 
-Before importing Core, the serve process replaces its environment with a closed set: interpreter
+Before importing Core, the serve process starts with `-B`, replaces its environment with a closed set,
+sets `sys.dont_write_bytecode` and binds `sys.pycache_prefix` to the private cache root: interpreter
 and locale inputs plus private `HOME`, `TMPDIR`, config, database, derivative, cache and node paths.
 Ambient deployment, signed-runtime, site-overlay, access-state, provider and credential selectors
 are not copied or read. A focused regression supplies hostile selector paths and confirms they are
@@ -58,7 +59,7 @@ VAULTLINE_DOCS_CORE_ROOT=/Users/jakehalperin/Developer/Vaultline/worktrees/core/
   .venv/bin/python -m unittest tests.test_core_capture -v
 ```
 
-It runs eight focused tests, including the real pinned Core config loader, without importing the Core
+It runs focused tests, including the real pinned Core config loader, without importing the Core
 server or starting a listener. The Docs virtual environment is Python 3.9.6 and supplies Playwright,
 Markdown, ReportLab and Pillow. It does not supply Flask or Werkzeug, so the Core server command is
 bound separately to the existing `/usr/bin/python3` environment. That interpreter supplies Flask,
@@ -76,7 +77,7 @@ is read.
 
 ```bash
 ROOT=/Users/jakehalperin/Developer/Vaultline/dev/docs-capture/vlp-2189-review
-/usr/bin/python3 scripts/core_capture_harness.py serve \
+/usr/bin/python3 -B scripts/core_capture_harness.py serve \
   --core-root /Users/jakehalperin/Developer/Vaultline/worktrees/core/vlp-2189-docs-capture-source \
   --revision 98a373276de75fcf9510dfb02ffb89778b8ea324 \
   --recipes examples/media-nexus-core-1.0.158-recipes.json \

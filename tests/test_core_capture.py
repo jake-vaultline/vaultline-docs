@@ -1,4 +1,5 @@
 import importlib.util
+import inspect
 import json
 import os
 import tempfile
@@ -77,6 +78,7 @@ class CoreCaptureHarnessTests(unittest.TestCase):
             self.assertEqual(plan["headless_jobs"], 1)
             self.assertEqual(plan["root_growth_plan_bytes"], 2 * 1024 * 1024 * 1024)
             self.assertEqual(plan["process_plan"], 32)
+            self.assertEqual(plan["capture_contract"], {"kind": "media-nexus-core", "version": 1})
             self.assertEqual(plan["capture_session"]["path"], "/__vaultline_docs/session")
             self.assertEqual(plan["capture_session"]["method"], "GET")
             self.assertEqual(plan["capture_proof"]["asset_id"], HARNESS.ASSET_ID)
@@ -91,6 +93,53 @@ class CoreCaptureHarnessTests(unittest.TestCase):
                           "v2": {"assets": [{"id": HARNESS.ASSET_ID}]}}, live=False)
         with self.assertRaisesRegex(ValueError, "static demo fallback refused"):
             capture_module.live_core_evidence(page, "http://127.0.0.1:1234")
+
+    def test_generic_fixture_mode_performs_no_core_live_checks(self):
+        identity = {"synthetic": True, "test_account": "docs-reviewer"}
+        proof = capture_module.core_capture_proof(identity)
+        self.assertIsNone(proof)
+        page = self.Page({})
+        self.assertEqual(capture_module.capture_step_evidence(
+            page, "http://127.0.0.1:1234", proof, 1, "Fixture result"), {})
+
+    def test_declared_core_requires_exact_proof_contract(self):
+        identity = {"capture_contract": {"kind": "media-nexus-core", "version": 1},
+                    "capture_session": capture_module.CORE_CAPTURE_SESSION}
+        with self.assertRaisesRegex(ValueError, "requires the exact persistence proof"):
+            capture_module.core_capture_proof(identity)
+        identity["capture_proof"] = {"method": "GET", "path": "/wrong"}
+        with self.assertRaisesRegex(ValueError, "requires the exact persistence proof"):
+            capture_module.core_capture_proof(identity)
+
+    def test_proof_cannot_fall_back_to_generic_capture(self):
+        with self.assertRaisesRegex(ValueError, "requires a declared Core capture contract"):
+            capture_module.core_capture_proof({"capture_proof": {}})
+        with self.assertRaisesRegex(ValueError, "Unsupported Core capture contract"):
+            capture_module.core_capture_proof({"capture_contract": {
+                "kind": "media-nexus-core", "version": 2}})
+
+    def test_core_step_evidence_refuses_live_proof_failure(self):
+        page = self.Page({"me": {"authenticated": True},
+                          "v2": {"assets": [{"id": HARNESS.ASSET_ID}]}}, live=False)
+        with self.assertRaisesRegex(ValueError, "static demo fallback refused"):
+            capture_module.capture_step_evidence(
+                page, "http://127.0.0.1:1234", {"path": "/__vaultline_docs/proof"},
+                1, "Live Core")
+
+    def test_python_runtime_fence_is_set_before_core_imports(self):
+        with tempfile.TemporaryDirectory() as temp, \
+             mock.patch.object(HARNESS.sys, "dont_write_bytecode", False), \
+             mock.patch.object(HARNESS.sys, "pycache_prefix", None):
+            state = HARNESS.configure_python_runtime(Path(temp))
+            self.assertTrue(HARNESS.sys.dont_write_bytecode)
+            self.assertEqual(HARNESS.sys.pycache_prefix, str(Path(temp) / "cache"))
+            self.assertEqual(state, {"dont_write_bytecode": True,
+                                     "pycache_prefix": str(Path(temp) / "cache")})
+        source = inspect.getsource(HARNESS.serve)
+        self.assertLess(source.index("configure_python_runtime(root)"),
+                        source.index('sys.path.insert(0, identity["core_root"])'))
+        self.assertLess(source.index("configure_python_runtime(root)"),
+                        source.index("import vaultline_config as core_config"))
 
     def test_persistence_proof_requires_member_and_unchanged_source(self):
         contract = {"path": "/__vaultline_docs/proof", "after_step": 2,

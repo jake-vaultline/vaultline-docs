@@ -198,6 +198,7 @@ def plan(core, revision, recipes_path, manifest_path, root, *, check_effective=T
         "contracts": bindings,
         "synthetic": True,
         "test_account": TEST_ACCOUNT,
+        "capture_contract": {"kind": "media-nexus-core", "version": 1},
         "capture_session": {"mode": "endpoint", "method": "GET",
                             "path": "/__vaultline_docs/session"},
         "capture_proof": {"method": "GET", "path": "/__vaultline_docs/proof",
@@ -239,6 +240,14 @@ def write_private(path, value):
     os.chmod(path, 0o600)
 
 
+def configure_python_runtime(root):
+    """Fence bytecode and cache writes before any pinned Core path or import is added."""
+    sys.dont_write_bytecode = True
+    sys.pycache_prefix = str(Path(root) / "cache")
+    return {"dont_write_bytecode": sys.dont_write_bytecode,
+            "pycache_prefix": sys.pycache_prefix}
+
+
 def serve(args):
     identity = plan(args.core_root, args.revision, args.recipes, args.manifest, args.root,
                     check_effective=False)
@@ -252,6 +261,7 @@ def serve(args):
     closed_env = runtime_environment(root, config_path)
     os.environ.clear()
     os.environ.update(closed_env)
+    python_runtime = configure_python_runtime(root)
     sys.path.insert(0, identity["core_root"])
     import vaultline_config as core_config
     manifest = read_json(args.manifest)
@@ -341,6 +351,7 @@ def serve(args):
     identity["port"] = httpd.server_port
     control = {**identity, "pid": os.getpid(), "start_uid": os.getuid(),
                "url": f"http://127.0.0.1:{httpd.server_port}",
+               "python_runtime": python_runtime,
                "runtime_argv": sys.argv, "runtime_env_names": sorted(name for name in os.environ
                  if name.startswith("VAULTLINE_") or name in {"PYTHONPYCACHEPREFIX", "PYTHONDONTWRITEBYTECODE"})}
     write_private(root / "control/ready.json", control)

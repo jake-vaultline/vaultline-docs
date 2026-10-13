@@ -7,6 +7,11 @@ from playwright.sync_api import sync_playwright, expect
 from .source import check_text, digest
 
 
+CORE_CAPTURE_CONTRACT = {'kind': 'media-nexus-core', 'version': 1}
+CORE_CAPTURE_SESSION = {'mode': 'endpoint', 'method': 'GET',
+                        'path': '/__vaultline_docs/session'}
+
+
 def origin(url):
     p = urlparse(url)
     if p.scheme != 'http' or p.hostname not in ('127.0.0.1', 'localhost', '::1') or p.username or p.password or p.path not in ('', '/') or p.query or p.fragment:
@@ -56,6 +61,38 @@ def persistence_evidence(page, url, contract, step):
     return proof
 
 
+def core_capture_proof(identity):
+    """Return the mandatory proof contract for declared Core capture identities."""
+    contract = identity.get('capture_contract')
+    if contract is None:
+        if 'capture_proof' in identity:
+            raise ValueError('Core persistence proof requires a declared Core capture contract')
+        return None
+    if contract != CORE_CAPTURE_CONTRACT:
+        raise ValueError('Unsupported Core capture contract')
+    if identity.get('capture_session') != CORE_CAPTURE_SESSION:
+        raise ValueError('Declared Core capture requires the synthetic session contract')
+    expected = {'method': 'GET', 'path': '/__vaultline_docs/proof', 'after_step': 2,
+                'collection': 'ARCHIVE-DOCS-SELECTS',
+                'asset_id': 'docs-ridge-sunrise',
+                'source_path_sha256': digest(b'/synthetic/docs/Ridge Sunrise.mp4')}
+    if identity.get('capture_proof') != expected:
+        raise ValueError('Declared Core capture requires the exact persistence proof contract')
+    return expected
+
+
+def capture_step_evidence(page, url, proof_contract, step, text):
+    """Apply Core-only live checks; generic fixture captures retain their existing path."""
+    if proof_contract is None:
+        return {}
+    if '(demo)' in text.lower():
+        raise ValueError('Rendered Core UI entered static demo fallback')
+    return {
+        'live_core': live_core_evidence(page, url),
+        'persistence': persistence_evidence(page, url, proof_contract, step),
+    }
+
+
 def capture(url, manifest, revision, bindings, guides, output):
     url = origin(url)
     if manifest.get('synthetic') is not True:
@@ -77,21 +114,16 @@ def capture(url, manifest, revision, bindings, guides, output):
                              'config_sha256': digest(manifest.get('config', {})),
                              'contracts': bindings, 'synthetic': True, 'test_account': 'docs-reviewer'}
         if {key: value for key, value in identity.items()
-                if key not in {'capture_session', 'capture_proof'}} != expected_identity:
+                if key not in {'capture_contract', 'capture_session', 'capture_proof'}} != expected_identity:
             raise ValueError('Test deployment identity does not match source/manifest')
+        proof_contract = core_capture_proof(identity)
         session = identity.get('capture_session')
         if session is not None:
-            if session != {'mode': 'endpoint', 'method': 'GET', 'path': '/__vaultline_docs/session'}:
+            if session != CORE_CAPTURE_SESSION:
                 raise ValueError('Unsupported synthetic capture session contract')
             started = page.request.get(url + session['path'])
             if not started.ok or started.json() != {'ok': True, 'test_account': 'docs-reviewer'}:
                 raise ValueError('Synthetic capture session could not start')
-        proof_contract = identity.get('capture_proof')
-        if proof_contract != {'method': 'GET', 'path': '/__vaultline_docs/proof', 'after_step': 2,
-                              'collection': 'ARCHIVE-DOCS-SELECTS',
-                              'asset_id': 'docs-ridge-sunrise',
-                              'source_path_sha256': digest(b'/synthetic/docs/Ridge Sunrise.mp4')}:
-            raise ValueError('Unsupported synthetic persistence proof contract')
         for guide in guides:
             records = []
             page.goto(url + '/')
@@ -135,10 +167,7 @@ def capture(url, manifest, revision, bindings, guides, output):
                         expect(target).to_be_visible()
                 text = page.locator('body').inner_text()
                 check_text(text)
-                if '(demo)' in text.lower():
-                    raise ValueError('Rendered Core UI entered static demo fallback')
-                live_evidence = live_core_evidence(page, url)
-                persisted = persistence_evidence(page, url, proof_contract, index)
+                evidence = capture_step_evidence(page, url, proof_contract, index, text)
                 # Credentials and unreviewed form content must never enter a screenshot.
                 if page.locator('input[type=password]').count():
                     raise ValueError('Credential field found in screenshot')
@@ -148,8 +177,7 @@ def capture(url, manifest, revision, bindings, guides, output):
                 page.screenshot(path=str(output / name), animations='disabled', full_page=True)
                 records.append({'step': index, 'file': name, 'sha256': digest((output / name).read_bytes()),
                                 'assertions': assertions, 'downloads': downloads, 'page_text_sha256': digest(text.encode())})
-                records[-1]['live_core'] = live_evidence
-                records[-1]['persistence'] = persisted
+                records[-1].update(evidence)
             results[guide['id']] = records
         context.close()
         browser.close()
